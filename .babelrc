@@ -1,0 +1,17 @@
+{
+  "assumptions": {
+    "setPublicClassFields": true
+  },
+  "presets": [
+    ["@babel/env", {
+      "targets": {
+        "node": "12"
+      }
+    }],
+    "@babel/typescript"
+  ],
+  "plugins": [
+    "@babel/proposal-class-properties",
+    "@babel/proposal-object-rest-spread"
+  ]
+}
