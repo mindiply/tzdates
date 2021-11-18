@@ -1,7 +1,7 @@
 import {BareDate, BareDuration} from './types';
 import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts';
 import {intDiv, intMod, roundDown} from './mathutils';
-import {negateBareDuration} from './duration';
+import {negateBareDuration, validateBareDateDuration} from './duration'
 
 let _cumulativeCycleYearsDays: number[] | null = null;
 let _cumulativeNegativeCycleYearsDays: number[] | null = null;
@@ -102,6 +102,7 @@ export function bareDateAdd(
   duration: BareDuration,
   mutateInput = false
 ): BareDate {
+  validateBareDateDuration(duration);
   const out = mutateInput ? bareDate : {...bareDate};
   if (duration.sign < 0) {
     return bareDateSubtract(
@@ -141,6 +142,7 @@ export function bareDateSubtract(
   duration: BareDuration,
   mutateInput = false
 ): BareDate {
+  validateBareDateDuration(duration);
   const out = mutateInput ? bareDate : {...bareDate};
   if (duration.sign < 0) {
     return bareDateAdd(bareDate, negateBareDuration(duration), mutateInput);
@@ -152,7 +154,7 @@ export function bareDateSubtract(
     if (out.month > duration.months) {
       out.month = out.month - duration.months;
     } else {
-      out.month = 12 - intMod(duration.months - out.month, 12);
+      out.month = 12 + intMod(out.month - duration.months, 12);
     }
     const monthDays = isoDaysInMonth(out.year, out.month);
     if (out.day > monthDays) {

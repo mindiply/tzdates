@@ -6,8 +6,8 @@ import {
   toEpochDay,
   weeksBareDuration,
   bareDuration,
-  bareDateOfEpochDay
-} from '../src';
+  bareDateOfEpochDay, bareDateSubtract
+} from '../src'
 
 describe('isLeapYear', () => {
   test('Valid leap years', () => {
@@ -214,15 +214,15 @@ describe('toEpochDate and back', () => {
   expect(toEpochDay(bareDate(-1, 1, 1))).toBe(
     0 - 365 - (146097 * 5 - (30 * 365 + 7))
   );
-  expect(bareDateOfEpochDay(0 - 365 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
-    bareDate(-1, 1, 1)
-  );
+  expect(
+    bareDateOfEpochDay(0 - 365 - (146097 * 5 - (30 * 365 + 7)))
+  ).toMatchObject(bareDate(-1, 1, 1));
   expect(toEpochDay(bareDate(-2, 1, 1))).toBe(
     0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7))
   );
-  expect(bareDateOfEpochDay(0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
-    bareDate(-2, 1, 1)
-  );
+  expect(
+    bareDateOfEpochDay(0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7)))
+  ).toMatchObject(bareDate(-2, 1, 1));
   expect(toEpochDay(bareDate(-3, 1, 1))).toBe(
     0 - 3 * 365 - (146097 * 5 - (30 * 365 + 7))
   );
@@ -235,15 +235,17 @@ describe('toEpochDate and back', () => {
   expect(toEpochDay(bareDate(-400, 1, 1))).toBe(
     0 - 146097 - (146097 * 5 - (30 * 365 + 7))
   );
-  expect(bareDateOfEpochDay(0 - 146097 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
-    bareDate(-400, 1, 1)
-  );
+  expect(
+    bareDateOfEpochDay(0 - 146097 - (146097 * 5 - (30 * 365 + 7)))
+  ).toMatchObject(bareDate(-400, 1, 1));
   expect(toEpochDay(bareDate(-405, 1, 1))).toBe(
     0 - (5 * 365 + 1) - 146097 - (146097 * 5 - (30 * 365 + 7))
   );
-  expect(bareDateOfEpochDay(0 - (5 * 365 + 1) - 146097 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
-    bareDate(-405, 1, 1)
-  );
+  expect(
+    bareDateOfEpochDay(
+      0 - (5 * 365 + 1) - 146097 - (146097 * 5 - (30 * 365 + 7))
+    )
+  ).toMatchObject(bareDate(-405, 1, 1));
   expect(toEpochDay(bareDate(1970, 1, 1))).toBe(0);
   expect(bareDateOfEpochDay(0)).toMatchObject(bareDate(1970, 1, 1));
   expect(bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)))).toMatchObject(
@@ -297,11 +299,62 @@ describe('barTimeAdd', () => {
     expect(
       bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 1, 1, 1))
     ).toMatchObject(bareDate(2022, 12, 17));
-
   });
   test('Overflowing additions', () => {
     expect(
       bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 12, 22, 10))
     ).toMatchObject(bareDate(2035, 9, 26));
+    expect(
+      bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 42))
+    ).toMatchObject(bareDate(2021, 12, 28));
+    expect(
+      bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 52))
+    ).toMatchObject(bareDate(2022, 1, 7));
+    expect(
+      bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 365))
+    ).toMatchObject(bareDate(2022, 11, 16));
+    expect(
+      bareDateAdd(bareDate(2023, 11, 16), bareDuration(1, 0, 0, 365))
+    ).toMatchObject(bareDate(2024, 11, 15));
+  });
+});
+
+describe('barTimeSubtract', () => {
+  test('Simple subtractions', () => {
+    expect(bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1))).toMatchObject(
+      bareDate(2021, 11, 16)
+    );
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 1))
+    ).toMatchObject(bareDate(2020, 11, 16));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 0, 1))
+    ).toMatchObject(bareDate(2021, 10, 16));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 1))
+    ).toMatchObject(bareDate(2021, 11, 15));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), weeksBareDuration(1, 1))
+    ).toMatchObject(bareDate(2021, 11, 9));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 1, 1, 1))
+    ).toMatchObject(bareDate(2020, 10, 15));
+  });
+  test('Overflowing subtractions', () => {
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 12, 22, 10))
+    ).toMatchObject(bareDate(2009, 1, 6));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 42))
+    ).toMatchObject(bareDate(2021, 10, 5));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 52))
+    ).toMatchObject(bareDate(2021, 9, 25));
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 365))
+    ).toMatchObject(bareDate(2020, 11, 16));
+    expect(
+      bareDateSubtract(bareDate(2024, 11, 16), bareDuration(1, 0, 0, 365))
+    ).toMatchObject(bareDate(2023, 11, 17));
   });
 });
