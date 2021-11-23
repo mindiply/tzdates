@@ -1,10 +1,12 @@
-import {BareDuration, BareTime, BareTimeDuration} from './types'
+import {BareDuration, BareTime, BareTimeDuration} from './types';
 import {intDiv, intMod} from './mathutils';
 import {
+  bareDuration,
   negateBareDuration,
   timeDurationMillis,
-  validateBareDuration, validateBareTimeDuration
-} from './duration'
+  validateBareDuration,
+  validateBareTimeDuration
+} from './bareduration';
 import {
   MILLIS_PER_DAY,
   MILLIS_PER_HOUR,
@@ -73,7 +75,10 @@ export function bareTimeAdd(
   inpDuration: Partial<BareTimeDuration>,
   isMutable = false
 ): BareTime {
-  const duration = Object.assign({sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0}, inpDuration);
+  const duration = Object.assign(
+    {sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0},
+    inpDuration
+  );
   validateBareTime(time);
   validateBareTimeDuration(duration);
   if (duration.sign < 0) {
@@ -92,7 +97,10 @@ export function bareTimeSubtract(
   inpDuration: Partial<BareTimeDuration>,
   isMutable = false
 ): BareTime {
-  const duration = Object.assign({sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0}, inpDuration);
+  const duration = Object.assign(
+    {sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0},
+    inpDuration
+  );
   validateBareTime(time);
   validateBareTimeDuration(duration);
   if (duration.sign < 0) {
@@ -120,8 +128,17 @@ function millisFromMidnight(time: BareTime): number {
   );
 }
 
-function validateBareTime({hour, minute, second, millisecond}: BareTime) {
+export function validateBareTime({
+  hour,
+  minute,
+  second,
+  millisecond
+}: BareTime) {
   if (
+    !Number.isInteger(hour) ||
+    !Number.isInteger(minute) ||
+    !Number.isInteger(second) ||
+    !Number.isInteger(millisecond) ||
     hour < 0 ||
     hour > 23 ||
     minute < 0 ||
@@ -193,4 +210,52 @@ export function bareTimeOfMsFromMidnight(
   };
   validateBareTime(out);
   return out;
+}
+
+export function bareTimeToString(bareTime: BareTime): string {
+  validateBareTime(bareTime);
+  const msStr =
+    bareTime.millisecond > 0
+      ? `.${
+          bareTime.millisecond < 10
+            ? '00'
+            : bareTime.millisecond < 100
+            ? '0'
+            : ''
+        }${bareTime.millisecond}`
+      : '';
+  return `T${bareTime.hour < 10 ? '0' : ''}${bareTime.hour}:${
+    bareTime.minute < 10 ? '0' : ''
+  }${bareTime.minute}:${bareTime.second < 10 ? '0' : ''}${
+    bareTime.second
+  }${msStr}`;
+}
+
+export function bareTimesDistance(
+  left: BareTime,
+  right: BareTime
+): BareDuration {
+  const timesCmp = cmpBareTimes(left, right);
+  if (timesCmp === 0) {
+    return bareDuration(0);
+  }
+  const earlier = timesCmp < 0 ? left : right;
+  const later = timesCmp < 0 ? right : left;
+  let millisDiff = millisFromMidnight(later) - millisFromMidnight(earlier);
+  const hours = intDiv(millisDiff, MILLIS_PER_HOUR);
+  millisDiff -= hours * MILLIS_PER_HOUR;
+  const minutes = millisDiff > 0 ? intDiv(millisDiff, MILLIS_PER_MINUTE) : 0;
+  millisDiff -= minutes * MILLIS_PER_MINUTE;
+  const seconds = millisDiff > 0 ? intDiv(millisDiff, MILLIS_PER_SECOND) : 0;
+  millisDiff -= seconds * MILLIS_PER_SECOND;
+  return bareDuration(
+    timesCmp < 0 ? 1 : -1,
+    0,
+    0,
+    0,
+    hours,
+    minutes,
+    seconds,
+    Math.round(millisDiff)
+  );
 }

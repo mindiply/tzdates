@@ -61,7 +61,7 @@ export interface BareDate {
 
 export interface BareDateTime extends BareTime, BareDate {}
 
-export interface BareZonedDateTime extends BareDateTime {
+export interface ZonedDateTime extends BareDateTime {
   timezone: TimeZone;
   utcOffsetSeconds: number;
   epochMilli: number;

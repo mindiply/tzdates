@@ -7,7 +7,10 @@ import {
 } from './types';
 import {MILLIS_PER_HOUR, MILLIS_PER_MINUTE, MILLIS_PER_SECOND} from './consts';
 
-export function weeksBareDuration(sign: DurationSign, weeks: number): BareDuration {
+export function weeksBareDuration(
+  sign: DurationSign,
+  weeks: number
+): BareDuration {
   const out: BareDuration = {
     sign,
     years: 0,
@@ -32,6 +35,69 @@ export function validateBareTimeDuration(duration: BareTimeDuration) {
   ) {
     throw new TypeError('All duration components should be positive');
   }
+}
+
+/**
+ * Checks if the duration has a non-zero time-only duration - e.g.
+ * with hours the highest unit being more than zero.
+ *
+ * It returns false also if the duration is zero.
+ *
+ * @param {BareDuration} duration
+ * @returns {Boolean}
+ */
+export function isTimeOnlyDuration(duration: BareDuration): Boolean {
+  if (duration.sign === 0) return false;
+  if (
+    duration.years > 0 ||
+    duration.months > 0 ||
+    duration.weeks > 0 ||
+    duration.days > 0
+  ) {
+    return false;
+  }
+  return includesTimeDuration(duration);
+}
+
+export function includesTimeDuration(duration: BareDuration): Boolean {
+  return (
+    duration.sign !== 0 &&
+    (duration.hours > 0 ||
+      duration.minutes > 0 ||
+      duration.seconds > 0 ||
+      duration.milliseconds > 0)
+  );
+}
+
+/**
+ * Checks if the duration has a non-zero date-only duration - e.g.
+ * with days the lowest unit being more than zero.
+ *
+ * It returns false also if the duration is zero.
+ *
+ * @param {BareDuration} duration
+ * @returns {Boolean}
+ */
+export function isDateOnlyDuration(duration: BareDuration): Boolean {
+  if (duration.sign === 0) return false;
+  if (
+    duration.hours > 0 ||
+    duration.minutes > 0 ||
+    duration.seconds > 0 ||
+    duration.milliseconds > 0
+  ) {
+    return false;
+  }
+  return includesDateDuration(duration);
+}
+
+export function includesDateDuration(duration: BareDuration): Boolean {
+  return duration.sign !== 0 && (
+    duration.years > 0 ||
+    duration.months > 0 ||
+    duration.weeks > 0 ||
+    duration.days > 0
+  );
 }
 
 export function validateBareDateDuration(duration: BareDateDuration) {

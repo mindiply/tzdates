@@ -63,3 +63,9 @@ function bsUntilIndex(array: Array<number>, value: number) {
   }
   return hi;
 }
+
+const validTimeZones = new Set(Object.values(TimeZone));
+
+export function isValidTimezone(timezone: TimeZone): boolean {
+  return validTimeZones.has(timezone);
+}

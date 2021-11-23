@@ -7,13 +7,15 @@ export {
   negateBareDuration,
   absBareDuration,
   cmpBareDurations
-} from './duration';
+} from './bareduration';
 export {
   bareTime,
   bareTimeWith,
   bareTimeAdd,
   bareTimeSubtract,
-  cmpBareTimes
+  cmpBareTimes,
+  bareTimeToString,
+  bareTimesDistance
 } from './baretime';
 export {
   bareDate,
@@ -27,11 +29,15 @@ export {
   isoWeekOfYear,
   dayOfYear,
   toEpochDay,
-  bareDateOfEpochDay
+  bareDateOfEpochDay,
+  bareDatesDistance,
+  bareDateToString
 } from './baredate';
-export {bareDateTimeFrom, offsetSecondsOf} from './baredatetime';
+export {bareDateTime, bareDateTimeFrom, offsetSecondsOf} from './baredatetime';
 export {
-  bareZoneDateTimeOf,
+  zonedDateTimeOf,
   cmpBareZonedDateTimes,
-  fromBareDateTime
+  fromBareDateTime,
+  zonedDateTimeAdd,
+  zonedDateTimeSubtract
 } from './zoneddatetime';

@@ -6,8 +6,11 @@ import {
   toEpochDay,
   weeksBareDuration,
   bareDuration,
-  bareDateOfEpochDay, bareDateSubtract
-} from '../src'
+  bareDateOfEpochDay,
+  bareDateSubtract,
+  bareDatesDistance,
+  bareDateToString
+} from '../src';
 
 describe('isLeapYear', () => {
   test('Valid leap years', () => {
@@ -50,7 +53,7 @@ describe('creation and validation', () => {
 
   test('some valid dates', () => {
     expect(bareDate()).toMatchObject({
-      year: 0,
+      year: 1970,
       month: 1,
       day: 1
     });
@@ -208,6 +211,24 @@ describe('bareDateWith', () => {
 
 describe('toEpochDate and back', () => {
   expect(toEpochDay(bareDate(0, 1, 1))).toBe(0 - (146097 * 5 - (30 * 365 + 7)));
+  expect(toEpochDay(bareDate(0, 1, 2))).toBe(
+    0 - (146097 * 5 - (30 * 365 + 7)) + 1
+  );
+  expect(toEpochDay(bareDate(-1, 12, 31))).toBe(
+    0 - (146097 * 5 - (30 * 365 + 7)) - 1
+  );
+  expect(bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)) - 1)).toMatchObject(
+    bareDate(-1, 12, 31)
+  );
+  expect(toEpochDay(bareDate(-1, 12, 30))).toBe(
+    0 - (146097 * 5 - (30 * 365 + 7)) - 2
+  );
+  expect(toEpochDay(bareDate(-1, 1, 1))).toBe(
+    0 - (146097 * 5 - (30 * 365 + 7)) - 365
+  );
+  expect(bareDateOfEpochDay(toEpochDay(bareDate(-1, 1, 1)))).toMatchObject(
+    bareDate(-1, 1, 1)
+  );
   expect(bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
     bareDate(0, 1, 1)
   );
@@ -302,6 +323,9 @@ describe('barTimeAdd', () => {
   });
   test('Overflowing additions', () => {
     expect(
+      bareDateSubtract(bareDate(2019, 12), bareDuration(1, 0, 1))
+    ).toMatchObject(bareDate(2020, 1, 1));
+    expect(
       bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 12, 22, 10))
     ).toMatchObject(bareDate(2035, 9, 26));
     expect(
@@ -317,13 +341,18 @@ describe('barTimeAdd', () => {
       bareDateAdd(bareDate(2023, 11, 16), bareDuration(1, 0, 0, 365))
     ).toMatchObject(bareDate(2024, 11, 15));
   });
+  test('Adding negative ranges', () => {
+    expect(
+      bareDateAdd(bareDate(2024, 11, 16), bareDuration(-1, 0, 0, 365))
+    ).toMatchObject(bareDate(2023, 11, 17));
+  });
 });
 
 describe('barTimeSubtract', () => {
   test('Simple subtractions', () => {
-    expect(bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1))).toMatchObject(
-      bareDate(2021, 11, 16)
-    );
+    expect(
+      bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1))
+    ).toMatchObject(bareDate(2021, 11, 16));
     expect(
       bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 1))
     ).toMatchObject(bareDate(2020, 11, 16));
@@ -342,6 +371,9 @@ describe('barTimeSubtract', () => {
   });
   test('Overflowing subtractions', () => {
     expect(
+      bareDateSubtract(bareDate(2021), bareDuration(1, 0, 1))
+    ).toMatchObject(bareDate(2020, 12, 1));
+    expect(
       bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 12, 22, 10))
     ).toMatchObject(bareDate(2009, 1, 6));
     expect(
@@ -356,5 +388,46 @@ describe('barTimeSubtract', () => {
     expect(
       bareDateSubtract(bareDate(2024, 11, 16), bareDuration(1, 0, 0, 365))
     ).toMatchObject(bareDate(2023, 11, 17));
+  });
+  test('Subtracting negative ranges', () => {
+    expect(
+      bareDateSubtract(bareDate(2024, 11, 16), bareDuration(-1, 0, 0, 365))
+    ).toMatchObject(bareDate(2025, 11, 16));
+  });
+});
+
+describe('bareDatesDistance', () => {
+  test('Various distances', () => {
+    expect(
+      bareDatesDistance(bareDate(2022, 1, 1), bareDate(2022, 1, 1))
+    ).toMatchObject(bareDuration(0));
+    expect(
+      bareDatesDistance(bareDate(2022, 1, 1), bareDate(2022, 1, 2))
+    ).toMatchObject(bareDuration(1, 0, 0, 1));
+    expect(
+      bareDatesDistance(bareDate(2022, 1, 1), bareDate(2021, 12, 31))
+    ).toMatchObject(bareDuration(-1, 0, 0, 1));
+    expect(
+      bareDatesDistance(bareDate(2021, 12, 1), bareDate(2021, 12, 31))
+    ).toMatchObject(bareDuration(1, 0, 0, 30));
+    expect(
+      bareDatesDistance(bareDate(2021, 12, 31), bareDate(2021, 12, 1))
+    ).toMatchObject(bareDuration(-1, 0, 0, 30));
+    expect(
+      bareDatesDistance(bareDate(2021, 12, 1), bareDate(2022, 12, 31))
+    ).toMatchObject(bareDuration(1, 0, 0, 365 + 30));
+    expect(
+      bareDatesDistance(bareDate(2022, 12, 31), bareDate(2021, 12, 1))
+    ).toMatchObject(bareDuration(-1, 0, 0, 365 + 30));
+  });
+});
+
+describe('bareDateToString', () => {
+  test('A few examples', () => {
+    expect(bareDateToString(bareDate(0))).toBe('0000-01-01');
+    expect(bareDateToString(bareDate())).toBe('1970-01-01');
+    expect(bareDateToString(bareDate(2100, 12, 31))).toBe('2100-12-31');
+    expect(bareDateToString(bareDate(21001, 10, 21))).toBe('21001-10-21');
+    expect(bareDateToString(bareDate(-102, 1, 1))).toBe('-0102-01-01');
   });
 });

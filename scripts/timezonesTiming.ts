@@ -1,6 +1,6 @@
 import {
   bareDateTimeFrom,
-  bareZoneDateTimeOf,
+  zonedDateTimeOf,
   TimeZone,
   timezoneOffset,
   cmpBareZonedDateTimes,
@@ -52,7 +52,7 @@ async function main() {
       epochMs < 1.3e10;
       epochMs += delta, delta = delta * iterationInterest
     ) {
-      bareZoneDateTimeOf(new Date(epochMs), testTimezone);
+      zonedDateTimeOf(new Date(epochMs), testTimezone);
     }
   }
   endMs = new Date().getTime();

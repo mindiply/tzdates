@@ -1,7 +1,11 @@
 import {BareDate, BareDuration} from './types';
 import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts';
 import {intDiv, intMod, roundDown} from './mathutils';
-import {negateBareDuration, validateBareDateDuration} from './duration'
+import {
+  bareDuration,
+  negateBareDuration,
+  validateBareDateDuration
+} from './bareduration';
 
 let _cumulativeCycleYearsDays: number[] | null = null;
 let _cumulativeNegativeCycleYearsDays: number[] | null = null;
@@ -44,7 +48,7 @@ export function cmpBareDates(left: BareDate, right: BareDate) {
   }
 }
 
-export function bareDate(year = 0, month = 1, day = 1) {
+export function bareDate(year = 1970, month = 1, day = 1) {
   const out: BareDate = {year, month, day};
   validateBareDate(out);
   return out;
@@ -118,7 +122,7 @@ export function bareDateAdd(
     if (out.month + duration.months <= 12) {
       out.month = out.month + duration.months;
     } else {
-      out.year += intDiv(out.month + duration.months - 1, 12)
+      out.year += intDiv(out.month + duration.months - 1, 12);
       out.month = intMod(out.month + duration.months, 12);
       if (out.month === 0) {
         out.month = 12;
@@ -154,6 +158,7 @@ export function bareDateSubtract(
     if (out.month > duration.months) {
       out.month = out.month - duration.months;
     } else {
+      out.year -= Math.abs(intDiv(out.month - duration.months, 12)) + 1;
       out.month = 12 + intMod(out.month - duration.months, 12);
     }
     const monthDays = isoDaysInMonth(out.year, out.month);
@@ -375,87 +380,14 @@ export function toEpochDay(bareDate: BareDate): number {
   }
   // -1 because 1 jan 1970 should be day 0
   return totalDays - 1 - DAYS_0000_TO_1970;
-
-  // let total = (bareDate.year < 0 ? -1 : 1) * nCycles * DAYS_PER_CYCLE;
-  // const yearCycleIndex = Math.abs(intMod(nFullYearsSinceZero, 400)) - 1;
-  // if (yearCycleIndex >= 0) {
-  //
-  // }
-  // total += 365 * y;
-  // if (y >= 0) {
-  //   total += intDiv(y + 3, 4) - intDiv(y + 99, 100) + intDiv(y + 399, 400);
-  // } else {
-  //   total -= intDiv(y, -4) - intDiv(y, -100) + intDiv(y, -400);
-  // }
-  // if (bareDate.month > 1) {
-  //   total += (
-  //     isLeapYear(bareDate.year)
-  //       ? cumulativeLeapYearDaysOfMonth
-  //       : cumulativeStdDaysOfMonth
-  //   )[bareDate.month - 1];
-  // }
-  // total += bareDate.day - 1;
-  // return total - DAYS_0000_TO_1970;
-}
-
-function yearIndexInCycle(restDays: number): number {
-  if (restDays < 1 || restDays > DAYS_PER_CYCLE) {
-    throw new RangeError(`Outside allowed range of 400 years cycle's days`);
-  }
-  let low = 0,
-    high = cumulativeCycleYearsDays().length - 1,
-    mid = (low + high) >> 1;
-  for (; low <= high; mid = (low + high) >> 1) {
-    if (
-      restDays <= cumulativeCycleYearsDays()[mid] &&
-      restDays > (mid > 0 ? cumulativeCycleYearsDays()[mid - 1] : 0)
-    ) {
-      return mid;
-    } else if (cumulativeCycleYearsDays()[mid] > restDays) {
-      high = mid - 1;
-    } else {
-      low = mid + 1;
-    }
-  }
-  throw new Error('Index not found, unexpected');
 }
 
 export function bareDateOfEpochDay(
   epochDay: number,
   bareDate?: BareDate
 ): BareDate {
-  // const totDays = epochDay + DAYS_0000_TO_1970 + 1;
-  // const nCycles = intDiv(totDays, DAYS_PER_CYCLE);
-  // let year = 400 * nCycles;
-  // const restDays = intMod(totDays, DAYS_PER_CYCLE);
-  //
-  // let out: BareDate;
-  // if (bareDate) {
-  //   out = bareDate;
-  //   out.year = year;
-  //   out.month = 12;
-  //   out.day = 31;
-  // } else {
-  //   out = {
-  //     year,
-  //     month: 12,
-  //     day: 31
-  //   };
-  // }
-  //
-  // if (restDays > 0) {
-  //   const restIndex = yearIndexInCycle(restDays);
-  //   out.year += restIndex;
-  //   const yearDays =
-  //     restDays - (restIndex > 0 ? cumulativeCycleYearsDays()[restIndex - 1] : 0);
-  //   monthAndDayOfYearNthDay(out.year, yearDays, out);
-  // }
-  // validateBareDate(out);
-  // return out;
-
   let adjust, adjustCycles, doyEst, yearEst, zeroDay;
-  zeroDay = epochDay + DAYS_0000_TO_1970;
-  zeroDay -= 60;
+  zeroDay = epochDay + DAYS_0000_TO_1970 - 60;
   adjust = 0;
   if (zeroDay < 0) {
     adjustCycles = intDiv(zeroDay + 1, DAYS_PER_CYCLE) - 1;
@@ -500,4 +432,55 @@ export function bareDateOfEpochDay(
   }
   validateBareDate(out);
   return out;
+}
+
+export function bareDatesDistance(
+  left: BareDate,
+  right: BareDate
+): BareDuration {
+  const datesCmp = cmpBareDates(left, right);
+  if (datesCmp === 0) {
+    return bareDuration(0);
+  }
+  const earlier = datesCmp < 0 ? left : right;
+  const later = datesCmp < 0 ? right : left;
+  return bareDuration(
+    datesCmp < 0 ? 1 : -1,
+    0,
+    0,
+    toEpochDay(later) - toEpochDay(earlier)
+  );
+}
+
+function yearIndexInCycle(restDays: number, beforeYearZero: boolean): number {
+  if (restDays < 1 || restDays > DAYS_PER_CYCLE) {
+    throw new RangeError(`Outside allowed range of 400 years cycle's days`);
+  }
+  let low = 0,
+    high = cumulativeCycleYearsDays().length - 1,
+    mid = (low + high) >> 1;
+  for (; low <= high; mid = (low + high) >> 1) {
+    const cycle = beforeYearZero ? cumulativeNegativeCycleYearsDays() : cumulativeCycleYearsDays();
+    if (
+      restDays <= cycle[mid] &&
+      restDays > (mid > 0 ? cycle[mid - 1] : 0)
+    ) {
+      return mid;
+    } else if (cycle[mid] > restDays) {
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+  throw new Error('Index not found, unexpected');
+}
+
+export function bareDateToString(bareDate: BareDate): string {
+  validateBareDate(bareDate);
+  const absYear = Math.abs(bareDate.year);
+  return `${bareDate.year < 0 ? '-' : ''}${
+    absYear < 10 ? '000' : absYear < 100 ? '00' : absYear < 1000 ? '0' : ''
+  }${absYear}-${bareDate.month > 9 ? bareDate.month : `0${bareDate.month}`}-${
+    bareDate.day > 9 ? bareDate.day : `0${bareDate.day}`
+  }`;
 }

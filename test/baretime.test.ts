@@ -1,4 +1,12 @@
-import {bareTime, bareTimeAdd, bareTimeSubtract, bareTimeWith} from '../src';
+import {
+  bareTime,
+  bareTimeAdd,
+  bareTimeSubtract,
+  bareTimeToString,
+  bareTimeWith,
+  bareTimesDistance,
+  bareDuration
+} from '../src';
 
 describe('baretime', () => {
   describe('Add', () => {
@@ -288,5 +296,66 @@ describe('baretime', () => {
         })
       ).toMatchObject(bareTime(15, 33, 57, 123));
     });
+  });
+});
+
+describe('bareTimeToString', () => {
+  test('Some examples', () => {
+    expect(bareTimeToString(bareTime())).toBe('T00:00:00');
+    expect(bareTimeToString(bareTime(23, 59, 59, 999))).toBe('T23:59:59.999');
+    expect(bareTimeToString(bareTime(1, 9, 9, 79))).toBe('T01:09:09.079');
+  });
+});
+
+describe('bareTimesDistance', () => {
+  test('Zero and limits', () => {
+    expect(bareTimesDistance(bareTime(), bareTime())).toMatchObject(
+      bareDuration(0)
+    );
+    expect(
+      bareTimesDistance(bareTime(23, 59, 59, 999), bareTime(23, 59, 59, 999))
+    ).toMatchObject(bareDuration(0));
+    expect(
+      bareTimesDistance(bareTime(), bareTime(23, 59, 59, 999))
+    ).toMatchObject(bareDuration(1, 0, 0, 0, 23, 59, 59, 999));
+    expect(
+      bareTimesDistance(bareTime(23, 59, 59, 999), bareTime())
+    ).toMatchObject(bareDuration(-1, 0, 0, 0, 23, 59, 59, 999));
+  });
+
+  test('One component at a time', () => {
+    expect(bareTimesDistance(bareTime(), bareTime(4))).toMatchObject(
+      bareDuration(1, 0, 0, 0, 4)
+    );
+    expect(bareTimesDistance(bareTime(8), bareTime(4))).toMatchObject(
+      bareDuration(-1, 0, 0, 0, 4)
+    );
+    expect(bareTimesDistance(bareTime(4, 12), bareTime(4, 45))).toMatchObject(
+      bareDuration(1, 0, 0, 0, 0, 33)
+    );
+    expect(bareTimesDistance(bareTime(19), bareTime(18, 1))).toMatchObject(
+      bareDuration(-1, 0, 0, 0, 0, 59)
+    );
+    expect(bareTimesDistance(bareTime(1, 4, 12), bareTime(1, 4, 45))).toMatchObject(
+      bareDuration(1, 0, 0, 0, 0, 0, 33)
+    );
+    expect(bareTimesDistance(bareTime(19), bareTime(18, 59, 1))).toMatchObject(
+      bareDuration(-1, 0, 0, 0, 0, 0, 59)
+    );
+    expect(bareTimesDistance(bareTime(1, 4, 45, 12), bareTime(1, 4, 45, 450))).toMatchObject(
+      bareDuration(1, 0, 0, 0, 0, 0, 0, 438)
+    );
+    expect(bareTimesDistance(bareTime(19), bareTime(18, 59, 59, 122))).toMatchObject(
+      bareDuration(-1, 0, 0, 0, 0, 0, 0, 878)
+    );
+  });
+
+  test('Some examples', () => {
+    expect(bareTimesDistance(bareTime(1, 4, 56, 12), bareTime(3))).toMatchObject(
+      bareDuration(1, 0, 0, 0, 1, 55, 3, 988)
+    );
+    expect(bareTimesDistance(bareTime(19), bareTime(17, 19, 29, 122))).toMatchObject(
+      bareDuration(-1, 0, 0, 0, 1, 40, 30, 878)
+    );
   });
 });
