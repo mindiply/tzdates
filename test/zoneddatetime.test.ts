@@ -3,10 +3,11 @@ import {
   fromBareDateTime,
   TimeZone,
   zonedDateTimeAdd,
-  zonedDateTimeOf, zonedDateTimeSubtract
-} from '../src'
-import {MILLIS_PER_SECOND} from '../dist/consts';
-import {bareDuration} from '../dist/duration';
+  zonedDateTimeOf,
+  zonedDateTimeSubtract,
+  MILLIS_PER_SECOND,
+  bareDuration
+} from '../src';
 
 describe('constructors', () => {
   describe('fromBareDateTime', () => {
@@ -308,7 +309,7 @@ describe('zonedDateTimeSubtract', () => {
         bareDuration(1, 0, 0, 2)
       )
     ).toMatchObject(
-      fromBareDateTime(bareDateTime(2023, 12, 30), TimeZone.AMERICA__NEW_YORK)
+      fromBareDateTime(bareDateTime(2024, 12, 30), TimeZone.AMERICA__NEW_YORK)
     );
   });
 
@@ -318,14 +319,19 @@ describe('zonedDateTimeSubtract', () => {
         fromBareDateTime(bareDateTime(0), TimeZone.UTC),
         bareDuration(1, 0, 0, 0, 1)
       )
-    ).toMatchObject(fromBareDateTime(bareDateTime(-1, 12, 31, 23), TimeZone.UTC));
+    ).toMatchObject(
+      fromBareDateTime(bareDateTime(-1, 12, 31, 23), TimeZone.UTC)
+    );
     expect(
       zonedDateTimeSubtract(
         fromBareDateTime(bareDateTime(1970), TimeZone.EUROPE__ROME),
         bareDuration(1, 0, 0, 0, 0, 1)
       )
     ).toMatchObject(
-      fromBareDateTime(bareDateTime(1969, 12, 31, 23, 59), TimeZone.EUROPE__ROME)
+      fromBareDateTime(
+        bareDateTime(1969, 12, 31, 23, 59),
+        TimeZone.EUROPE__ROME
+      )
     );
     expect(
       zonedDateTimeSubtract(
@@ -351,57 +357,57 @@ describe('zonedDateTimeSubtract', () => {
     );
   });
 
-  test('Time and date additions, with daylight saving changes', () => {
+  test('Time and date subtractions, with daylight saving changes', () => {
     expect(
-      zonedDateTimeAdd(
+      zonedDateTimeSubtract(
         fromBareDateTime(
-          bareDateTime(2025, 3, 8, 23, 59, 59, 998),
+          bareDateTime(2025, 3, 9, 1, 59, 59, 999),
           TimeZone.AMERICA__LOS_ANGELES
         ),
         bareDuration(1, 0, 0, 0, 2, 0, 0, 1)
       )
     ).toMatchObject(
       fromBareDateTime(
-        bareDateTime(2025, 3, 9, 1, 59, 59, 999),
+        bareDateTime(2025, 3, 8, 23, 59, 59, 998),
         TimeZone.AMERICA__LOS_ANGELES
       )
     );
     expect(
-      zonedDateTimeAdd(
+      zonedDateTimeSubtract(
         fromBareDateTime(
-          bareDateTime(2025, 3, 8, 23, 59, 59, 999),
+          bareDateTime(2025, 3, 9, 3),
           TimeZone.AMERICA__LOS_ANGELES
         ),
         bareDuration(1, 0, 0, 0, 2, 0, 0, 1)
       )
     ).toMatchObject(
       fromBareDateTime(
-        bareDateTime(2025, 3, 9, 3),
+        bareDateTime(2025, 3, 8, 23, 59, 59, 999),
         TimeZone.AMERICA__LOS_ANGELES
       )
     );
     expect(
-      zonedDateTimeAdd(
+      zonedDateTimeSubtract(
         fromBareDateTime(
-          bareDateTime(2004, 10, 30, 12),
+          bareDateTime(2004, 10, 31, 3),
           TimeZone.AMERICA__LOS_ANGELES
         ),
         bareDuration(1, 0, 0, 0, 14)
       )
     ).toMatchObject(
       fromBareDateTime(
-        bareDateTime(2004, 10, 31, 1),
+        bareDateTime(2004, 10, 30, 14),
         TimeZone.AMERICA__LOS_ANGELES
       )
     );
     expect(
-      zonedDateTimeAdd(
+      zonedDateTimeSubtract(
         fromBareDateTime(
-          bareDateTime(2004, 10, 30, 12),
+          bareDateTime(2004, 10, 31, 1, 59, 59, 999),
           TimeZone.AMERICA__LOS_ANGELES
         ),
         bareDuration(1, 0, 0, 0, 13, 59, 59, 999)
       )
-    ).toMatchObject(bareDateTime(2004, 10, 31, 1, 59, 59, 999));
+    ).toMatchObject(bareDateTime(2004, 10, 30, 13));
   });
 });

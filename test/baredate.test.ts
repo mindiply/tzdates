@@ -323,7 +323,7 @@ describe('barTimeAdd', () => {
   });
   test('Overflowing additions', () => {
     expect(
-      bareDateSubtract(bareDate(2019, 12), bareDuration(1, 0, 1))
+      bareDateAdd(bareDate(2019, 12), bareDuration(1, 0, 1))
     ).toMatchObject(bareDate(2020, 1, 1));
     expect(
       bareDateAdd(bareDate(2021, 11, 16), bareDuration(1, 12, 22, 10))
@@ -375,7 +375,7 @@ describe('barTimeSubtract', () => {
     ).toMatchObject(bareDate(2020, 12, 1));
     expect(
       bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 12, 22, 10))
-    ).toMatchObject(bareDate(2009, 1, 6));
+    ).toMatchObject(bareDate(2008, 1, 6));
     expect(
       bareDateSubtract(bareDate(2021, 11, 16), bareDuration(1, 0, 0, 42))
     ).toMatchObject(bareDate(2021, 10, 5));

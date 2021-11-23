@@ -158,7 +158,7 @@ export function bareDateSubtract(
     if (out.month > duration.months) {
       out.month = out.month - duration.months;
     } else {
-      out.year -= Math.abs(intDiv(out.month - duration.months, 12)) + 1;
+      out.year -= Math.ceil(Math.abs(duration.months - (out.month - 1)) / 12);
       out.month = 12 + intMod(out.month - duration.months, 12);
     }
     const monthDays = isoDaysInMonth(out.year, out.month);

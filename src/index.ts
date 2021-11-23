@@ -1,4 +1,5 @@
 export {UnknownTimezoneError, IncorrectTimezoneData} from './types';
+export * from './consts';
 export {TimeZone} from './timezones';
 export {timezoneOffset} from './tzOffset';
 export {
