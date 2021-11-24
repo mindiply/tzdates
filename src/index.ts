@@ -34,11 +34,18 @@ export {
   bareDatesDistance,
   bareDateToString
 } from './baredate';
-export {bareDateTime, bareDateTimeFrom, offsetSecondsOf} from './baredatetime';
+export {
+  bareDateTime,
+  bareDateTimeFrom,
+  offsetSecondsOf,
+  bareDateTimeWith
+} from './baredatetime';
 export {
   zonedDateTimeOf,
   cmpBareZonedDateTimes,
   fromBareDateTime,
   zonedDateTimeAdd,
-  zonedDateTimeSubtract
+  zonedDateTimeSubtract,
+  zonedDateTimesDistance,
+  withZonedDateTime
 } from './zoneddatetime';

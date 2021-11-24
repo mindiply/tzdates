@@ -14,7 +14,7 @@ import {
   SECS_PER_DAY
 } from './consts';
 import {bareTimeOfMsFromMidnight, validateBareTime} from './baretime';
-import {bareDateOfEpochDay, toEpochDay, validateBareDate} from './baredate';
+import {bareDateOfEpochDay, isoDaysInMonth, toEpochDay, validateBareDate} from './baredate'
 
 export function emptyBareDateTime(): BareDateTime {
   return {
@@ -81,6 +81,28 @@ export function bareDateTimeFrom(
   bareTimeOfMsFromMidnight(secsOfDay * 1000 + dateMsRest, dt);
   validateBareDateTime(dt);
   return dt;
+}
+
+export function bareDateTimeWith(
+  bdt: BareDateTime,
+  changes: Partial<BareDateTime>,
+  isMutable = false
+): BareDateTime {
+  const out = Object.assign(isMutable ? bdt : {
+    year: bdt.year,
+    month: bdt.month,
+    day: bdt.day,
+    hour: bdt.hour,
+    minute: bdt.minute,
+    second: bdt.second,
+    millisecond: bdt.millisecond
+  }, changes);
+  const maxMonthDays = isoDaysInMonth(out.year, out.month);
+  if (maxMonthDays < out.day) {
+    out.day = maxMonthDays;
+  }
+  validateBareDateTime(out);
+  return out;
 }
 
 /**

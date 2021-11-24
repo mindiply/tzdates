@@ -12,22 +12,33 @@ import {
   SECS_PER_DAY
 } from './consts';
 import {
-  bareDateNonOffsetUtcMs, emptyBareDateTime, epochMillisecondOf,
+  bareDateNonOffsetUtcMs,
+  bareDateTimeWith,
+  emptyBareDateTime,
+  epochMillisecondOf,
   nextValidDateTime,
   offsetSecondsOf,
   validateBareDateTime
-} from './baredatetime'
-import {bareTimeOfMsFromMidnight, validateBareTime} from './baretime';
+} from './baredatetime';
+import {
+  bareTimeOfMsFromMidnight,
+  cmpBareTimes,
+  validateBareTime
+} from './baretime';
 import {
   bareDate,
   bareDateAdd,
-  bareDateOfEpochDay, bareDateSubtract,
-  isoDaysInMonth
-} from './baredate'
+  bareDateOfEpochDay,
+  bareDateSubtract,
+  isoDaysInMonth,
+  toEpochDay
+} from './baredate';
 import {
   includesDateDuration,
   includesTimeDuration,
-  validateBareDuration,negateBareDuration
+  validateBareDuration,
+  negateBareDuration,
+  bareDuration
 } from './bareduration';
 
 function emptyBareZonedDateTime(): ZonedDateTime {
@@ -45,10 +56,26 @@ function emptyBareZonedDateTime(): ZonedDateTime {
   };
 }
 
+export function cloneZonedDateTime(zdt: ZonedDateTime): ZonedDateTime {
+  validateZonedDateTime(zdt);
+  return {
+    year: zdt.year,
+    month: zdt.month,
+    day: zdt.day,
+    hour: zdt.hour,
+    minute: zdt.minute,
+    second: zdt.second,
+    millisecond: zdt.millisecond,
+    utcOffsetSeconds: zdt.utcOffsetSeconds,
+    timezone: zdt.timezone,
+    epochMilli: zdt.epochMilli
+  };
+}
+
 export function zonedDateTimeOf(
   dateOrEpochMs: Date | number,
   zone: TimeZone,
-  applyTo? : ZonedDateTime
+  applyTo?: ZonedDateTime
 ): ZonedDateTime {
   const dateMs =
     dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs;
@@ -58,18 +85,20 @@ export function zonedDateTimeOf(
   const localSecs = dateSecs + offsetSecs;
   const localEpochDay = Math.floor(localSecs / SECS_PER_DAY);
   const secsOfDay = localSecs - localEpochDay * SECS_PER_DAY;
-  const zdt: ZonedDateTime = applyTo ? applyTo : {
-    utcOffsetSeconds: offsetSecs,
-    timezone: zone,
-    epochMilli: dateMs,
-    year: 0,
-    month: 1,
-    day: 1,
-    hour: 0,
-    minute: 0,
-    second: 0,
-    millisecond: 0
-  };
+  const zdt: ZonedDateTime = applyTo
+    ? applyTo
+    : {
+        utcOffsetSeconds: offsetSecs,
+        timezone: zone,
+        epochMilli: dateMs,
+        year: 0,
+        month: 1,
+        day: 1,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      };
   zdt.utcOffsetSeconds = offsetSecs;
   zdt.epochMilli = dateMs;
   zdt.timezone = zone;
@@ -119,6 +148,7 @@ export function withZonedDateTime(
   const out = mutateInput ? zdt : {...zdt};
   Object.assign(out, withValues);
   out.day = Math.min(out.day, isoDaysInMonth(out.year, out.month));
+  nextValidDateTime(out.timezone, out, true);
   _updateOffsetAndEpochMilli(out);
   validateZonedDateTime(out);
   return out;
@@ -126,7 +156,8 @@ export function withZonedDateTime(
 
 function _updateOffsetAndEpochMilli(zdt: ZonedDateTime) {
   zdt.utcOffsetSeconds = offsetSecondsOf(zdt, zdt.timezone);
-  zdt.epochMilli = bareDateNonOffsetUtcMs(zdt) - zdt.utcOffsetSeconds * MILLIS_PER_SECOND;
+  zdt.epochMilli =
+    bareDateNonOffsetUtcMs(zdt) - zdt.utcOffsetSeconds * MILLIS_PER_SECOND;
 }
 
 export function zonedDateTimeAdd(
@@ -139,7 +170,11 @@ export function zonedDateTimeAdd(
     return zdt;
   }
   if (duration.sign < 0) {
-    return zonedDateTimeSubtract(zdt, negateBareDuration(duration), mutateInput)
+    return zonedDateTimeSubtract(
+      zdt,
+      negateBareDuration(duration),
+      mutateInput
+    );
   }
   validateZonedDateTime(zdt);
   const out = mutateInput ? zdt : Object.assign({}, zdt);
@@ -161,16 +196,17 @@ export function zonedDateTimeAdd(
   return out;
 }
 
-export function zonedDateTimeSubtract(zdt: ZonedDateTime,
-                                     duration: BareDuration,
-                                     mutateInput = false
+export function zonedDateTimeSubtract(
+  zdt: ZonedDateTime,
+  duration: BareDuration,
+  mutateInput = false
 ): ZonedDateTime {
   validateBareDuration(duration);
   if (duration.sign === 0) {
     return zdt;
   }
   if (duration.sign < 0) {
-    return zonedDateTimeAdd(zdt, negateBareDuration(duration), mutateInput)
+    return zonedDateTimeAdd(zdt, negateBareDuration(duration), mutateInput);
   }
   validateZonedDateTime(zdt);
   const out = mutateInput ? zdt : Object.assign({}, zdt);
@@ -206,4 +242,92 @@ export function validateZonedDateTime(zdt: ZonedDateTime) {
   if (typeof zdt.epochMilli !== 'number' || Number.isNaN(zdt.epochMilli)) {
     throw new TypeError('Incorrect ms from epoch field');
   }
+}
+
+export function zonedDateTimesDistance(
+  left: ZonedDateTime,
+  right: ZonedDateTime
+): BareDuration {
+  validateZonedDateTime(left);
+  validateZonedDateTime(right);
+  const sameZoneRight = zonedDateTimeToTimezone(right, left.timezone);
+  const cmpLeftRight = cmpBareZonedDateTimes(left, sameZoneRight);
+  if (cmpLeftRight === 0) {
+    return bareDuration(0);
+  }
+  const earlier = cmpLeftRight < 0 ? left : sameZoneRight;
+  let timeMsDistance = 0;
+  const later = cmpLeftRight < 0 ? sameZoneRight : left;
+  let fullDaysDistance = toEpochDay(later) - toEpochDay(earlier);
+  if (cmpBareTimes(earlier, later) > 0) {
+    fullDaysDistance = Math.max(0, fullDaysDistance - 1);
+    const dayAfterFirstMidnight = withZonedDateTime(
+      zonedDateTimeAdd(earlier, bareDuration(1, 0, 0, 1)),
+      {hour: 0, minute: 0, second: 0, millisecond: 0},
+      true
+    );
+    timeMsDistance += dayAfterFirstMidnight.epochMilli - earlier.epochMilli;
+    const lastDayMidnight = withZonedDateTime(later, {
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0
+    });
+    timeMsDistance += later.epochMilli - lastDayMidnight.epochMilli;
+  } else {
+    const lastDaySameStartDayTime =
+      fullDaysDistance > 0
+        ? fromBareDateTime(
+            nextValidDateTime(
+              later.timezone,
+              bareDateTimeWith(later, {
+                hour: earlier.hour,
+                minute: earlier.minute,
+                second: earlier.second,
+                millisecond: earlier.millisecond
+              }),
+              true
+            ),
+            later.timezone
+          )
+        : earlier;
+    timeMsDistance += later.epochMilli - lastDaySameStartDayTime.epochMilli;
+  }
+  const hours = intDiv(timeMsDistance, MILLIS_PER_HOUR);
+  timeMsDistance -= hours * MILLIS_PER_HOUR;
+  const minutes = intDiv(timeMsDistance, MILLIS_PER_MINUTE);
+  timeMsDistance -= minutes * MILLIS_PER_MINUTE;
+  const seconds = intDiv(timeMsDistance, MILLIS_PER_SECOND);
+  timeMsDistance -= seconds * MILLIS_PER_SECOND;
+  return bareDuration(
+    cmpLeftRight < 0 ? 1 : -1,
+    0,
+    0,
+    fullDaysDistance,
+    hours,
+    minutes,
+    seconds,
+    Math.min(999, Math.max(0, Math.round(timeMsDistance)))
+  );
+}
+
+/**
+ * Returns the instant represented by the zoned date time passed in input,
+ * as a zoned date time with the desired timezone.
+ *
+ * If the original zoned date time is already in the desired timezone, it returns
+ * it as is.
+ *
+ * @param {ZonedDateTime} zdt
+ * @param {TimeZone} timezone
+ * @returns {ZonedDateTime}
+ */
+export function zonedDateTimeToTimezone(
+  zdt: ZonedDateTime,
+  timezone: TimeZone
+): ZonedDateTime {
+  if (zdt.timezone === timezone) {
+    return zdt;
+  }
+  return zonedDateTimeOf(zdt.epochMilli, timezone);
 }

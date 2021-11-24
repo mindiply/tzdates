@@ -1,12 +1,13 @@
 import {
   bareDateTime,
+  bareDuration,
   fromBareDateTime,
+  MILLIS_PER_SECOND,
   TimeZone,
   zonedDateTimeAdd,
   zonedDateTimeOf,
-  zonedDateTimeSubtract,
-  MILLIS_PER_SECOND,
-  bareDuration
+  zonedDateTimesDistance,
+  zonedDateTimeSubtract
 } from '../src';
 
 describe('constructors', () => {
@@ -409,5 +410,161 @@ describe('zonedDateTimeSubtract', () => {
         bareDuration(1, 0, 0, 0, 13, 59, 59, 999)
       )
     ).toMatchObject(bareDateTime(2004, 10, 30, 13));
+  });
+});
+
+describe('zonedDateTimesDistance', () => {
+  test('Zero distance', () => {
+    expect(
+      zonedDateTimesDistance(
+        zonedDateTimeOf(0, TimeZone.UTC),
+        zonedDateTimeOf(0, TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(0));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2030, 1, 1), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2030, 1, 1), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(0));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 1, 1), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(0));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 9), TimeZone.ASIA__TOKYO),
+        fromBareDateTime(
+          bareDateTime(2024, 12, 31, 19),
+          TimeZone.AMERICA__NEW_YORK
+        )
+      )
+    ).toMatchObject(bareDuration(0));
+  });
+
+  test('Positive simple distances', () => {
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 0, 0, 0, 1), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 0, 0, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 0, 0, 1), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 0, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 0, 12), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 0, 0, 12));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 11), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 0, 11));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 1, 2, 0), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 2, 1, 0), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 31));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2024, 1, 1, 1), TimeZone.EUROPE__ROME),
+        fromBareDateTime(bareDateTime(2025, 2, 1, 0), TimeZone.UTC)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 366+31));
+  });
+
+  test('Positive negative distances', () => {
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 0, 0, 0, 1), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 0, 0, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 0, 0, 1), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 0, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 0, 12), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 0, 0, 12));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 1, 11), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 0, 11));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 1, 2, 0), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 2, 1, 0), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2025, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 31));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2025, 2, 1, 0), TimeZone.UTC),
+        fromBareDateTime(bareDateTime(2024, 1, 1, 1), TimeZone.EUROPE__ROME)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 366+31));
+  });
+
+  test('Around daylight time saving', () => {
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2014, 3, 8, 2, 30), TimeZone.AMERICA__LOS_ANGELES),
+        fromBareDateTime(bareDateTime(2014, 3, 9, 3), TimeZone.AMERICA__LOS_ANGELES)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2014, 3, 8, 0, 30), TimeZone.AMERICA__LOS_ANGELES),
+        fromBareDateTime(bareDateTime(2014, 3, 9, 1, 30), TimeZone.AMERICA__LOS_ANGELES)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 1, 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2014, 3, 8, 2, 30), TimeZone.AMERICA__LOS_ANGELES),
+        fromBareDateTime(bareDateTime(2014, 3, 9, 3, 30), TimeZone.AMERICA__LOS_ANGELES)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 1, 0, 30));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2014, 3, 9, 3, 30), TimeZone.AMERICA__LOS_ANGELES),
+        fromBareDateTime(bareDateTime(2014, 3, 8, 2, 30), TimeZone.AMERICA__LOS_ANGELES)
+      )
+    ).toMatchObject(bareDuration(-1, 0, 0, 1, 0, 30));
+
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2019, 10, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2019, 10, 25, 3, 30), TimeZone.ASIA__AMMAN)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 5, 1));
   });
 });

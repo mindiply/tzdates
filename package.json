@@ -1,8 +1,12 @@
 {
-  "name": "@bongione/tz-offset",
+  "name": "tzdates",
   "version": "0.0.1",
-  "description": "Simple functions to calculate the offset of instant in times",
+  "description": "Bare-bone timezone aware date time functions",
   "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mindiply/tzdates.git"
+  },
   "scripts": {
     "genData": "ts-node ./scripts/genZonesData.ts",
     "test": "jest",
@@ -18,7 +22,8 @@
     "timezones",
     "dates",
     "typescript",
-    "javascript"
+    "javascript",
+    "immutable"
   ],
   "files": [
     "dist"
