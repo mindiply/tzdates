@@ -420,6 +420,60 @@ describe('bareDatesDistance', () => {
       bareDatesDistance(bareDate(2022, 12, 31), bareDate(2021, 12, 1))
     ).toMatchObject(bareDuration(-1, 0, 0, 365 + 30));
   });
+
+  test('Using rounding options', () => {
+    expect(
+      bareDatesDistance(bareDate(2020, 11, 5), bareDate(2021, 12, 31), {
+        largestUnit: 'year',
+        smallestUnit: 'day'
+      })
+    ).toMatchObject(bareDuration(1, 1, 1, 26));
+    expect(
+      bareDatesDistance(bareDate(2020, 11, 26), bareDate(2021, 12, 5), {
+        largestUnit: 'year',
+        smallestUnit: 'day'
+      })
+    ).toMatchObject(bareDuration(1, 1, 0, 9));
+    expect(
+      bareDatesDistance(bareDate(2020, 11, 5), bareDate(2021, 12, 31), {
+        largestUnit: 'year',
+        smallestUnit: 'month'
+      })
+    ).toMatchObject(bareDuration(1, 1, 1));
+    expect(
+      bareDatesDistance(bareDate(2020, 11, 26), bareDate(2021, 12, 5), {
+        largestUnit: 'year',
+        smallestUnit: 'month',
+        roundingMode: 'ceil'
+      })
+    ).toMatchObject(bareDuration(1, 1, 1));
+    expect(
+      bareDatesDistance(bareDate(2020, 11, 26), bareDate(2021, 12, 5), {
+        largestUnit: 'year',
+        smallestUnit: 'month',
+        roundingMode: 'halfExpand'
+      })
+    ).toMatchObject(bareDuration(1, 1, 0));
+    expect(
+      bareDatesDistance(bareDate(2020, 11, 5), bareDate(2021, 12, 31), {
+        largestUnit: 'year',
+        smallestUnit: 'month'
+      })
+    ).toMatchObject(bareDuration(1, 1, 1));
+    expect(
+      bareDatesDistance(bareDate(2021, 9, 26), bareDate(2020, 10, 5), {
+        largestUnit: 'year',
+        smallestUnit: 'year',
+      })
+    ).toMatchObject(bareDuration(0));
+    expect(
+      bareDatesDistance(bareDate(2021, 9, 26), bareDate(2020, 10, 5), {
+        largestUnit: 'year',
+        smallestUnit: 'year',
+        roundingMode: 'halfExpand'
+      })
+    ).toMatchObject(bareDuration(-1, 1));
+  })
 });
 
 describe('bareDateToString', () => {

@@ -567,4 +567,69 @@ describe('zonedDateTimesDistance', () => {
       )
     ).toMatchObject(bareDuration(1, 0, 0, 5, 1));
   });
+
+  test('Use rounding options', () => {
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN)
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25, 1, 5, 23, 998));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {smallestUnit: 'day'}
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {smallestUnit: 'day', roundingMode: 'halfExpand'}
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {smallestUnit: 'day', roundingMode: 'ceil'}
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25+1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {largestUnit: 'hour'}
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 0, (365+11+25)*24 + 1, 5, 23, 998));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {largestUnit: 'minute', smallestUnit: 'minute', roundingMode: 'ceil'}
+      )
+    ).toMatchObject(bareDuration(1, 0, 0, 0, 0, ((365+11+25)*24 + 1) * 60 + 5 + 1));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {largestUnit: 'year', smallestUnit: 'month', roundingMode: 'ceil'}
+      )
+    ).toMatchObject(bareDuration(1, 1, 2));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        {largestUnit: 'month', smallestUnit: 'day'}
+      )
+    ).toMatchObject(bareDuration(1, 0, 13, 5));
+    expect(
+      zonedDateTimesDistance(
+        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        {largestUnit: 'month', smallestUnit: 'day'}
+      )
+    ).toMatchObject(bareDuration(-1, 0, 13, 5));
+  })
 });

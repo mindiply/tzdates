@@ -1,10 +1,19 @@
-import {BareDate, BareDuration} from './types';
+import {
+  BareDate,
+  BareDuration,
+  DistanceFnOptions,
+  RoundingTimeUnit
+} from './types';
 import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts';
 import {intDiv, intMod, roundDown} from './mathutils';
 import {
   bareDuration,
+  dayPriority,
+  monthPriority,
   negateBareDuration,
-  validateBareDateDuration
+  roundingUnitPriority,
+  validateBareDateDuration,
+  yearPriority
 } from './bareduration';
 
 let _cumulativeCycleYearsDays: number[] | null = null;
@@ -434,21 +443,101 @@ export function bareDateOfEpochDay(
   return out;
 }
 
+export function cmpMonthDay(
+  left: Omit<BareDate, 'year'>,
+  right: Omit<BareDate, 'year'>
+): number {
+  if (left.month < right.month) {
+    return -1;
+  } else if (left.month > right.month) {
+    return 1;
+  } else if (left.day < right.day) {
+    return -1;
+  } else if (left.day > right.day) {
+    return 1;
+  }
+  return 0;
+}
+
 export function bareDatesDistance(
   left: BareDate,
-  right: BareDate
+  right: BareDate,
+  options: DistanceFnOptions = {}
 ): BareDuration {
+  const {
+    largestUnit = 'day',
+    smallestUnit = 'day',
+    roundingMode = 'floor'
+  } = options;
+
   const datesCmp = cmpBareDates(left, right);
   if (datesCmp === 0) {
     return bareDuration(0);
   }
-  const earlier = datesCmp < 0 ? left : right;
+  let earlier = datesCmp < 0 ? left : right;
   const later = datesCmp < 0 ? right : left;
+  const largestPriority = roundingUnitPriority(largestUnit);
+  const smallestPriority = roundingUnitPriority(smallestUnit);
+  if (largestPriority < smallestPriority || largestPriority < dayPriority) {
+    throw RangeError(
+      'The lowest duration unit cannot be more than the highest one and has to be day at least'
+    );
+  }
+
+  if (largestPriority === dayPriority) {
+    return bareDuration(
+      datesCmp < 0 ? 1 : -1,
+      0,
+      0,
+      toEpochDay(later) - toEpochDay(earlier)
+    );
+  }
+  let years = 0,
+    months = 0,
+    days = 0;
+  if (largestPriority >= yearPriority) {
+    years = later.year - earlier.year;
+    if (cmpMonthDay(earlier, later) > 0 && years > 0) {
+      years--;
+    }
+    earlier =
+      years > 0 ? bareDateWith(earlier, {year: earlier.year + years}) : earlier;
+    if (
+      smallestPriority === yearPriority &&
+      cmpBareDates(earlier, later) < 0 &&
+      (roundingMode === 'ceil' ||
+        (roundingMode === 'halfExpand' &&
+          toEpochDay(later) - toEpochDay(earlier) >= 365 / 2))
+    ) {
+      years++;
+    }
+  }
+  if (largestPriority >= monthPriority && smallestPriority <= monthPriority) {
+    months = later.year * 12 + later.month - (earlier.year * 12 + earlier.month);
+    if (later.day < earlier.day && months > 0) {
+      months--;
+    }
+    earlier =
+      months > 0 ? bareDateAdd(earlier, bareDuration(1, 0, months)) : earlier;
+    if (
+      smallestPriority === monthPriority &&
+      cmpBareDates(earlier, later) < 0 &&
+      (roundingMode === 'ceil' ||
+        (roundingMode === 'halfExpand' &&
+          toEpochDay(later) - toEpochDay(earlier) >= 15))
+    ) {
+      months++;
+    }
+  }
+  if (smallestPriority <= dayPriority) {
+    days = toEpochDay(later) - toEpochDay(earlier);
+  }
+
   return bareDuration(
-    datesCmp < 0 ? 1 : -1,
-    0,
-    0,
-    toEpochDay(later) - toEpochDay(earlier)
+    years + months + days === 0 ? 0 : datesCmp < 0 ? 1 : -1,
+    years,
+    months,
+    days
   );
 }
 
@@ -460,11 +549,10 @@ function yearIndexInCycle(restDays: number, beforeYearZero: boolean): number {
     high = cumulativeCycleYearsDays().length - 1,
     mid = (low + high) >> 1;
   for (; low <= high; mid = (low + high) >> 1) {
-    const cycle = beforeYearZero ? cumulativeNegativeCycleYearsDays() : cumulativeCycleYearsDays();
-    if (
-      restDays <= cycle[mid] &&
-      restDays > (mid > 0 ? cycle[mid - 1] : 0)
-    ) {
+    const cycle = beforeYearZero
+      ? cumulativeNegativeCycleYearsDays()
+      : cumulativeCycleYearsDays();
+    if (restDays <= cycle[mid] && restDays > (mid > 0 ? cycle[mid - 1] : 0)) {
       return mid;
     } else if (cycle[mid] > restDays) {
       high = mid - 1;

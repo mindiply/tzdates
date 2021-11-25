@@ -1,4 +1,10 @@
-import {BareDateTime, BareDuration, ZonedDateTime} from './types';
+import {
+  BareDateTime,
+  BareDuration,
+  DistanceFnOptions,
+  RoundingTimeUnit,
+  ZonedDateTime
+} from './types';
 import {TimeZone} from './timezones';
 import {isValidTimezone, timezoneOffsetSeconds} from './tzOffset';
 import {intDiv, intMod} from './mathutils';
@@ -20,25 +26,31 @@ import {
   offsetSecondsOf,
   validateBareDateTime
 } from './baredatetime';
+import {bareTimeOfMsFromMidnight, cmpBareTimes} from './baretime';
 import {
-  bareTimeOfMsFromMidnight,
-  cmpBareTimes,
-  validateBareTime
-} from './baretime';
-import {
-  bareDate,
   bareDateAdd,
   bareDateOfEpochDay,
   bareDateSubtract,
+  bareDateWith,
+  cmpBareDates,
+  cmpMonthDay,
   isoDaysInMonth,
   toEpochDay
 } from './baredate';
 import {
+  bareDuration,
+  dayPriority,
+  hourPriority,
   includesDateDuration,
   includesTimeDuration,
-  validateBareDuration,
+  minPriority,
+  monthPriority,
+  msPriority,
   negateBareDuration,
-  bareDuration
+  roundingUnitPriority,
+  secsPriority,
+  validateBareDuration,
+  yearPriority
 } from './bareduration';
 
 function emptyBareZonedDateTime(): ZonedDateTime {
@@ -133,7 +145,7 @@ export function fromBareDateTime(
   return out;
 }
 
-export function cmpBareZonedDateTimes(
+export function cmpZonedDateTimes(
   dtLeft: ZonedDateTime,
   dtRight: ZonedDateTime
 ): number {
@@ -244,70 +256,202 @@ export function validateZonedDateTime(zdt: ZonedDateTime) {
   }
 }
 
+function cmpTimeUnits(left: RoundingTimeUnit, right: RoundingTimeUnit) {
+  return roundingUnitPriority(left) - roundingUnitPriority(right);
+}
+
 export function zonedDateTimesDistance(
   left: ZonedDateTime,
-  right: ZonedDateTime
+  right: ZonedDateTime,
+  options: DistanceFnOptions = {}
 ): BareDuration {
+  const {
+    roundingMode = 'trunc',
+    smallestUnit = 'millisecond',
+    largestUnit = 'day'
+  } = options;
+  const smallestUnitPriority = roundingUnitPriority(smallestUnit);
+  const largestUnitPriority = roundingUnitPriority(largestUnit);
+  if (largestUnitPriority < smallestUnitPriority) {
+    throw new RangeError('Largest unit is lower than smallest unit');
+  }
   validateZonedDateTime(left);
   validateZonedDateTime(right);
   const sameZoneRight = zonedDateTimeToTimezone(right, left.timezone);
-  const cmpLeftRight = cmpBareZonedDateTimes(left, sameZoneRight);
+  const cmpLeftRight = cmpZonedDateTimes(left, sameZoneRight);
   if (cmpLeftRight === 0) {
     return bareDuration(0);
   }
-  const earlier = cmpLeftRight < 0 ? left : sameZoneRight;
-  let timeMsDistance = 0;
+  let earlier = cmpLeftRight < 0 ? left : sameZoneRight;
   const later = cmpLeftRight < 0 ? sameZoneRight : left;
-  let fullDaysDistance = toEpochDay(later) - toEpochDay(earlier);
-  if (cmpBareTimes(earlier, later) > 0) {
-    fullDaysDistance = Math.max(0, fullDaysDistance - 1);
-    const dayAfterFirstMidnight = withZonedDateTime(
-      zonedDateTimeAdd(earlier, bareDuration(1, 0, 0, 1)),
-      {hour: 0, minute: 0, second: 0, millisecond: 0},
-      true
-    );
-    timeMsDistance += dayAfterFirstMidnight.epochMilli - earlier.epochMilli;
-    const lastDayMidnight = withZonedDateTime(later, {
-      hour: 0,
-      minute: 0,
-      second: 0,
-      millisecond: 0
-    });
-    timeMsDistance += later.epochMilli - lastDayMidnight.epochMilli;
+  let timeMsDistance = 0,
+    fullDays = 0,
+    years = 0,
+    months = 0,
+    days = 0;
+  if (largestUnitPriority <= hourPriority) {
+    // Time only comparison, let's use epochMilli only
+    timeMsDistance = later.epochMilli - earlier.epochMilli;
   } else {
-    const lastDaySameStartDayTime =
-      fullDaysDistance > 0
-        ? fromBareDateTime(
-            nextValidDateTime(
-              later.timezone,
-              bareDateTimeWith(later, {
-                hour: earlier.hour,
-                minute: earlier.minute,
-                second: earlier.second,
-                millisecond: earlier.millisecond
-              }),
-              true
-            ),
-            later.timezone
-          )
-        : earlier;
-    timeMsDistance += later.epochMilli - lastDaySameStartDayTime.epochMilli;
+    if (largestUnitPriority >= yearPriority) {
+      years = later.year - earlier.year;
+      if (cmpMonthDay(earlier, later) > 0 && years > 0) {
+        years--;
+      }
+      earlier =
+        years > 0
+          ? withZonedDateTime(earlier, {year: earlier.year + years})
+          : earlier;
+      if (
+        smallestUnitPriority === yearPriority &&
+        cmpBareDates(earlier, later) < 0 &&
+        (roundingMode === 'ceil' ||
+          (roundingMode === 'halfExpand' &&
+            toEpochDay(later) - toEpochDay(earlier) >= 365 / 2))
+      ) {
+        years++;
+      }
+    }
+    if (
+      largestUnitPriority >= monthPriority &&
+      smallestUnitPriority <= monthPriority
+    ) {
+      months =
+        later.year * 12 + later.month - (earlier.year * 12 + earlier.month);
+      if (later.day < earlier.day && months > 0) {
+        months--;
+      }
+      earlier =
+        months > 0
+          ? zonedDateTimeAdd(earlier, bareDuration(1, 0, months))
+          : earlier;
+      if (
+        smallestUnitPriority === monthPriority &&
+        cmpBareDates(earlier, later) < 0 &&
+        (roundingMode === 'ceil' ||
+          (roundingMode === 'halfExpand' &&
+            toEpochDay(later) - toEpochDay(earlier) >= 15))
+      ) {
+        months++;
+      }
+    }
+    fullDays = toEpochDay(later) - toEpochDay(earlier);
+    if (cmpBareTimes(earlier, later) > 0) {
+      fullDays = Math.max(0, fullDays - 1);
+      const dayAfterFirstMidnight = withZonedDateTime(
+        zonedDateTimeAdd(earlier, bareDuration(1, 0, 0, 1)),
+        {hour: 0, minute: 0, second: 0, millisecond: 0},
+        true
+      );
+      timeMsDistance += dayAfterFirstMidnight.epochMilli - earlier.epochMilli;
+      const lastDayMidnight = withZonedDateTime(later, {
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      });
+      timeMsDistance += later.epochMilli - lastDayMidnight.epochMilli;
+    } else {
+      const lastDaySameStartDayTime =
+        fullDays > 0
+          ? fromBareDateTime(
+              nextValidDateTime(
+                later.timezone,
+                bareDateTimeWith(later, {
+                  hour: earlier.hour,
+                  minute: earlier.minute,
+                  second: earlier.second,
+                  millisecond: earlier.millisecond
+                }),
+                true
+              ),
+              later.timezone
+            )
+          : earlier;
+      timeMsDistance += later.epochMilli - lastDaySameStartDayTime.epochMilli;
+    }
   }
-  const hours = intDiv(timeMsDistance, MILLIS_PER_HOUR);
-  timeMsDistance -= hours * MILLIS_PER_HOUR;
-  const minutes = intDiv(timeMsDistance, MILLIS_PER_MINUTE);
-  timeMsDistance -= minutes * MILLIS_PER_MINUTE;
-  const seconds = intDiv(timeMsDistance, MILLIS_PER_SECOND);
-  timeMsDistance -= seconds * MILLIS_PER_SECOND;
+  let hours = 0,
+    minutes = 0,
+    seconds = 0,
+    milliseconds = 0;
+
+  if (smallestUnitPriority >= dayPriority) {
+    if (
+      timeMsDistance > 0 &&
+      (roundingMode === 'ceil' ||
+        (roundingMode === 'halfExpand' && timeMsDistance >= MILLIS_PER_DAY / 2))
+    ) {
+      fullDays++;
+    }
+  } else {
+    if (
+      largestUnitPriority >= hourPriority &&
+      smallestUnitPriority <= hourPriority
+    ) {
+      hours = intDiv(timeMsDistance, MILLIS_PER_HOUR);
+      timeMsDistance -= hours * MILLIS_PER_HOUR;
+      if (
+        smallestUnitPriority === hourPriority &&
+        timeMsDistance > 0 &&
+        (roundingMode === 'ceil' ||
+          (roundingMode === 'halfExpand' &&
+            timeMsDistance >= MILLIS_PER_HOUR / 2))
+      ) {
+        hours++;
+      }
+    }
+    if (
+      largestUnitPriority >= minPriority &&
+      smallestUnitPriority <= minPriority
+    ) {
+      minutes = intDiv(timeMsDistance, MILLIS_PER_MINUTE);
+      timeMsDistance -= minutes * MILLIS_PER_MINUTE;
+      if (
+        smallestUnitPriority === minPriority &&
+        timeMsDistance > 0 &&
+        (roundingMode === 'ceil' ||
+          (roundingMode === 'halfExpand' &&
+            timeMsDistance >= MILLIS_PER_MINUTE / 2))
+      ) {
+        minutes++;
+      }
+    }
+    if (
+      largestUnitPriority >= secsPriority &&
+      smallestUnitPriority <= secsPriority
+    ) {
+      seconds = intDiv(timeMsDistance, MILLIS_PER_SECOND);
+      timeMsDistance -= seconds * MILLIS_PER_SECOND;
+      if (
+        smallestUnitPriority === secsPriority &&
+        timeMsDistance > 0 &&
+        (roundingMode === 'ceil' ||
+          (roundingMode === 'halfExpand' &&
+            timeMsDistance >= MILLIS_PER_SECOND / 2))
+      ) {
+        minutes++;
+      }
+    }
+    if (smallestUnitPriority <= msPriority) {
+      milliseconds = Math.round(timeMsDistance);
+    }
+  }
+  if (smallestUnitPriority <= dayPriority) {
+    // We do days at the end, because they may have been modified by
+    // rounding after dealing with the time part
+    days = fullDays;
+  }
+
   return bareDuration(
     cmpLeftRight < 0 ? 1 : -1,
-    0,
-    0,
-    fullDaysDistance,
+    years,
+    months,
+    days,
     hours,
     minutes,
     seconds,
-    Math.min(999, Math.max(0, Math.round(timeMsDistance)))
+    Math.max(0, milliseconds)
   );
 }
 

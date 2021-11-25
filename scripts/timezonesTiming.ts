@@ -3,7 +3,7 @@ import {
   zonedDateTimeOf,
   TimeZone,
   timezoneOffset,
-  cmpBareZonedDateTimes,
+  cmpZonedDateTimes,
   fromBareDateTime
 } from '../src/index';
 import {intMod} from '../dist/mathutils';

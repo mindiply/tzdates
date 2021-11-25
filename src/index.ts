@@ -1,4 +1,15 @@
-export {UnknownTimezoneError, IncorrectTimezoneData} from './types';
+export {
+  UnknownTimezoneError,
+  IncorrectTimezoneData,
+  ZonedDateTime,
+  BareDuration,
+  BareTime,
+  BareDate,
+  BareDateDuration,
+  BareTimeDuration,
+  DurationSign,
+  BareDateTime,
+} from './types';
 export * from './consts';
 export {TimeZone} from './timezones';
 export {timezoneOffset} from './tzOffset';
@@ -42,7 +53,7 @@ export {
 } from './baredatetime';
 export {
   zonedDateTimeOf,
-  cmpBareZonedDateTimes,
+  cmpZonedDateTimes,
   fromBareDateTime,
   zonedDateTimeAdd,
   zonedDateTimeSubtract,

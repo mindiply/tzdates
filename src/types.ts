@@ -66,3 +66,11 @@ export interface ZonedDateTime extends BareDateTime {
   utcOffsetSeconds: number;
   epochMilli: number;
 }
+
+export type RoundingTimeUnit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond';
+
+export interface DistanceFnOptions {
+  largestUnit?: RoundingTimeUnit;
+  smallestUnit?: RoundingTimeUnit;
+  roundingMode?: 'halfExpand' | 'ceil' | 'trunc' | 'floor'
+}

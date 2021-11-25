@@ -1,9 +1,10 @@
 import {
-  DurationSign,
-  BareDuration,
-  BareTimeDuration,
   BareDateDuration,
-  BareSignedDuration
+  BareDuration,
+  BareSignedDuration,
+  BareTimeDuration,
+  DurationSign,
+  RoundingTimeUnit
 } from './types';
 import {MILLIS_PER_HOUR, MILLIS_PER_MINUTE, MILLIS_PER_SECOND} from './consts';
 
@@ -92,11 +93,12 @@ export function isDateOnlyDuration(duration: BareDuration): Boolean {
 }
 
 export function includesDateDuration(duration: BareDuration): Boolean {
-  return duration.sign !== 0 && (
-    duration.years > 0 ||
-    duration.months > 0 ||
-    duration.weeks > 0 ||
-    duration.days > 0
+  return (
+    duration.sign !== 0 &&
+    (duration.years > 0 ||
+      duration.months > 0 ||
+      duration.weeks > 0 ||
+      duration.days > 0)
   );
 }
 
@@ -259,3 +261,22 @@ export function cmpBareDurations(left: BareDuration, right: BareDuration) {
     r.milliseconds;
   return l.sign > 0 ? lMillis - rMillis : rMillis - lMillis;
 }
+
+export function roundingUnitPriority(unit: RoundingTimeUnit): number {
+  if (unit === 'millisecond') return 10;
+  if (unit === 'second') return 20;
+  if (unit === 'minute') return 30;
+  if (unit === 'hour') return 40;
+  if (unit === 'day') return 100;
+  if (unit === 'month') return 200;
+  if (unit === 'year') return 500;
+  return 0;
+}
+
+export const msPriority = roundingUnitPriority('millisecond');
+export const secsPriority = roundingUnitPriority('second');
+export const minPriority = roundingUnitPriority('minute');
+export const hourPriority = roundingUnitPriority('hour');
+export const dayPriority = roundingUnitPriority('day');
+export const monthPriority = roundingUnitPriority('month');
+export const yearPriority = roundingUnitPriority('year');
