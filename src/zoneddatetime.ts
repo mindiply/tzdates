@@ -157,8 +157,9 @@ export function withZonedDateTime(
   withValues: Partial<BareDateTime>,
   mutateInput = false
 ): ZonedDateTime {
-  const out = mutateInput ? zdt : {...zdt};
-  Object.assign(out, withValues);
+  const out = mutateInput
+    ? Object.assign(zdt, withValues)
+    : Object.assign({}, zdt, withValues);
   out.day = Math.min(out.day, isoDaysInMonth(out.year, out.month));
   nextValidDateTime(out.timezone, out, true);
   _updateOffsetAndEpochMilli(out);
