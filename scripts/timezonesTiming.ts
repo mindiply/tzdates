@@ -3,10 +3,11 @@ import {
   zonedDateTimeOf,
   TimeZone,
   timezoneOffset,
-  cmpZonedDateTimes,
+  withZonedDateTime,
   fromBareDateTime
 } from '../src/index';
-import {intMod} from '../dist/mathutils';
+import {intMod} from '../src/mathutils';
+import {ZonedDateTime} from '../dist'
 
 const iterationInterest = 1.01;
 
@@ -90,6 +91,58 @@ async function main() {
       endMs - startMs
     } ms after ${j} iterations, ${microSecsPerIteration} microSecs per iteration`
   );
+
+
+  for (const unit of ['year', 'month', 'day', 'hour', 'minute', 'second']) {
+    startMs = (new Date()).getTime();
+    for (const testTimezone of Object.values(TimeZone)) {
+      for (let epochMs = -10e10, delta = 1000; epochMs < 1.3e10; epochMs += delta, delta = delta * iterationInterest) {
+        const zdt = zonedDateTimeOf(new Date(epochMs), testTimezone);
+        try {
+          startOf(zdt, unit as 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second');
+        } catch (err) {
+          console.log(`Unable to do startOf of\n${JSON.stringify(zdt, null, 2)}`)
+          console.log(err);
+        }
+      }
+    }
+    endMs = (new Date()).getTime();
+    microSecsPerIteration = (endMs - startMs) * 1000 / i;
+    console.log(`Completed startOf(${unit}) in ${endMs - startMs} ms after ${i} iterations, ${microSecsPerIteration} microSecs per iteration`);
+  }
+
+}
+
+function startOf(dateTime: ZonedDateTime, resolution: 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second') {
+  switch (resolution) {
+    case 'second':
+      return withZonedDateTime(dateTime, {millisecond: 0});
+    case 'minute':
+      return withZonedDateTime(
+        dateTime,
+        {second: 0, millisecond: 0}
+      );
+    case 'hour':
+      return withZonedDateTime(
+        dateTime,
+        {minute: 0, second: 0, millisecond: 0}
+      );
+    case 'day':
+      return withZonedDateTime(
+        dateTime,
+        {hour: 0, minute: 0, second: 0, millisecond: 0}
+      );
+    case 'month':
+      return withZonedDateTime(
+        dateTime,
+        {day: 1, hour: 0, minute: 0, second: 0, millisecond: 0}
+      );
+    case 'year':
+      return withZonedDateTime(
+        dateTime,
+        {month: 1, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0}
+      );
+  }
 }
 
 main().then().catch();

@@ -1,5 +1,4 @@
-import {bareDateTimeFrom, bareZoneDateTimeOf, bareZonedDateTimeFrom, TimeZone, timezoneOffset} from '../dist/index.js'
-import {cmpBareZonedDateTimes} from '../dist/zoneddatetime.js'
+import {bareDateTimeFrom, zonedDateTimeOf, TimeZone, timezoneOffset, cmpZonedDateTimes, withZonedDateTime} from '../dist/index.js'
 
 const iterationInterest = 1.001;
 
@@ -46,9 +45,9 @@ async function main() {
 
   for (const testTimezone of Object.values(TimeZone)) {
     for (let epochMs = -10e10, delta = 1000; epochMs < 1.3e10; epochMs += delta, delta = delta * iterationInterest) {
-      const v1 = bareZonedDateTimeFrom(new Date(epochMs), testTimezone);
-      const v2 = bareZoneDateTimeOf(new Date(epochMs), testTimezone);
-      if (cmpBareZonedDateTimes(v1, v2) !== 0) {
+      const v1 = zonedDateTimeOf(new Date(epochMs), testTimezone);
+      const v2 = zonedDateTimeOf(new Date(epochMs), testTimezone);
+      if (cmpZonedDateTimes(v1, v2) !== 0) {
         throw new Error('Should return the same value');
       }
     }

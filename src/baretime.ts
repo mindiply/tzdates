@@ -59,13 +59,15 @@ export function bareTimeWith(
   values: Partial<BareTime>,
   isMutable = false
 ): BareTime {
-  validateBareTime(time);
-  const out = isMutable
-    ? Object.assign(time, values)
+  const out: BareTime = isMutable
+    ? time
     : {
-        ...time,
-        ...values
+        hour: time.hour,
+        minute: time.minute,
+        second: time.second,
+        millisecond: time.millisecond
       };
+  _assignBareTime(out, values);
   validateBareTime(out);
   return out;
 }
@@ -87,7 +89,10 @@ export function bareTimeAdd(
   const outMillis = millisFromMidnight(time) + timeDurationMillis(duration);
   const modMillis = intMod(outMillis, MILLIS_PER_DAY);
   const modTime = bareTimeFromMillisFromMidnight(modMillis);
-  const out = isMutable ? Object.assign(time, modTime) : modTime;
+  const out = isMutable ? time : modTime;
+  if (isMutable) {
+    _assignBareTime(out, modTime);
+  }
   validateBareTime(out);
   return out;
 }
@@ -101,7 +106,6 @@ export function bareTimeSubtract(
     {sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0},
     inpDuration
   );
-  validateBareTime(time);
   validateBareTimeDuration(duration);
   if (duration.sign < 0) {
     return bareTimeAdd(time, negateBareDuration(duration), isMutable);
@@ -114,7 +118,10 @@ export function bareTimeSubtract(
       : timeMs - durationMs;
   const modMillis = intMod(outMillis, MILLIS_PER_DAY);
   const modTime = bareTimeFromMillisFromMidnight(modMillis);
-  const out = isMutable ? Object.assign(time, modTime) : modTime;
+  const out = isMutable ? time : modTime;
+  if (isMutable) {
+    _assignBareTime(out, modTime);
+  }
   validateBareTime(out);
   return out;
 }
@@ -184,9 +191,10 @@ export function bareTimeOfMsFromMidnight(
     throw new RangeError('Milliseconds from midnight should be positive');
   }
   if (msFromMidnight >= MILLIS_PER_DAY) {
-    throw new RangeError(
-      'Millis since midnight should be less than 24hours worth'
-    );
+    msFromMidnight = intMod(msFromMidnight, MILLIS_PER_DAY);
+    // throw new RangeError(
+    //   `Millis since midnight should be less than 24hours worth: ${msFromMidnight}`
+    // );
   }
   const hour = intDiv(msFromMidnight, MILLIS_PER_HOUR);
   msFromMidnight -= hour * MILLIS_PER_HOUR;
@@ -258,4 +266,23 @@ export function bareTimesDistance(
     seconds,
     Math.round(millisDiff)
   );
+}
+
+export function _assignBareTime(
+  copyInto: BareTime,
+  changes: Partial<BareTime>
+): BareTime {
+  if (changes.hour !== undefined) {
+    copyInto.hour = changes.hour;
+  }
+  if (changes.minute !== undefined) {
+    copyInto.minute = changes.minute;
+  }
+  if (changes.second !== undefined) {
+    copyInto.second = changes.second;
+  }
+  if (changes.millisecond !== undefined) {
+    copyInto.millisecond = changes.millisecond;
+  }
+  return copyInto;
 }

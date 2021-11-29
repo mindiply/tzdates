@@ -1,9 +1,8 @@
 import {
   BareDate,
   BareDuration,
-  DistanceFnOptions,
-  RoundingTimeUnit
-} from './types';
+  DistanceFnOptions
+} from './types'
 import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts';
 import {intDiv, intMod, roundDown} from './mathutils';
 import {
@@ -82,7 +81,7 @@ export function bareDateWith(
   changes: Partial<BareDate>,
   mutateInput = false
 ) {
-  const out = mutateInput ? bareDate : {...bareDate};
+  const out = mutateInput ? bareDate : _assignBareDate({} as BareDate, bareDate);
   if (typeof changes.year !== 'undefined') {
     out.year = changes.year;
   }
@@ -116,7 +115,7 @@ export function bareDateAdd(
   mutateInput = false
 ): BareDate {
   validateBareDateDuration(duration);
-  const out = mutateInput ? bareDate : {...bareDate};
+  const out = mutateInput ? bareDate : _assignBareDate({} as BareDate, bareDate);
   if (duration.sign < 0) {
     return bareDateSubtract(
       bareDate,
@@ -156,7 +155,7 @@ export function bareDateSubtract(
   mutateInput = false
 ): BareDate {
   validateBareDateDuration(duration);
-  const out = mutateInput ? bareDate : {...bareDate};
+  const out = mutateInput ? bareDate : _assignBareDate({} as BareDate, bareDate);
   if (duration.sign < 0) {
     return bareDateAdd(bareDate, negateBareDuration(duration), mutateInput);
   }
@@ -571,4 +570,17 @@ export function bareDateToString(bareDate: BareDate): string {
   }${absYear}-${bareDate.month > 9 ? bareDate.month : `0${bareDate.month}`}-${
     bareDate.day > 9 ? bareDate.day : `0${bareDate.day}`
   }`;
+}
+
+export function _assignBareDate(copyInto: BareDate, changes: Partial<BareDate>): BareDate {
+  if (changes.year !== undefined) {
+    copyInto.year = changes.year;
+  }
+  if (changes.month !== undefined) {
+    copyInto.month = changes.month;
+  }
+  if (changes.day !== undefined) {
+    copyInto.day = changes.day;
+  }
+  return copyInto;
 }

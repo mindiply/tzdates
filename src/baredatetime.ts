@@ -13,8 +13,18 @@ import {
   MILLIS_PER_SECOND,
   SECS_PER_DAY
 } from './consts';
-import {bareTimeOfMsFromMidnight, validateBareTime} from './baretime';
-import {bareDateOfEpochDay, isoDaysInMonth, toEpochDay, validateBareDate} from './baredate'
+import {
+  _assignBareTime,
+  bareTimeOfMsFromMidnight,
+  validateBareTime
+} from './baretime';
+import {
+  _assignBareDate,
+  bareDateOfEpochDay,
+  isoDaysInMonth,
+  toEpochDay,
+  validateBareDate
+} from './baredate';
 
 export function emptyBareDateTime(): BareDateTime {
   return {
@@ -55,7 +65,8 @@ export function bareDateTimeFrom(
   zone: TimeZone
 ): BareDateTime {
   const dateMs =
-    dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs;
+    (dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs) ||
+    0;
   const offsetSecs = timezoneOffsetSeconds(zone, dateMs);
   let dateSecs = intDiv(dateMs, 1000);
   let dateMsRest = intMod(dateMs, 1000);
@@ -88,15 +99,18 @@ export function bareDateTimeWith(
   changes: Partial<BareDateTime>,
   isMutable = false
 ): BareDateTime {
-  const out = Object.assign(isMutable ? bdt : {
-    year: bdt.year,
-    month: bdt.month,
-    day: bdt.day,
-    hour: bdt.hour,
-    minute: bdt.minute,
-    second: bdt.second,
-    millisecond: bdt.millisecond
-  }, changes);
+  const out = isMutable
+    ? bdt
+    : {
+        year: bdt.year,
+        month: bdt.month,
+        day: bdt.day,
+        hour: bdt.hour,
+        minute: bdt.minute,
+        second: bdt.second,
+        millisecond: bdt.millisecond
+      };
+  _assignBareDateTime(out, changes);
   const maxMonthDays = isoDaysInMonth(out.year, out.month);
   if (maxMonthDays < out.day) {
     out.day = maxMonthDays;
@@ -301,4 +315,13 @@ export function bareDateTimeFromUtcMs(
 export function validateBareDateTime(dateTime: BareDateTime) {
   validateBareDate(dateTime);
   validateBareTime(dateTime);
+}
+
+export function _assignBareDateTime(
+  copyInto: BareDateTime,
+  changes: Partial<BareDateTime>
+): BareDateTime {
+  _assignBareDate(copyInto, changes);
+  _assignBareTime(copyInto, changes);
+  return copyInto;
 }

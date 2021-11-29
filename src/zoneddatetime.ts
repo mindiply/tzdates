@@ -18,6 +18,7 @@ import {
   SECS_PER_DAY
 } from './consts';
 import {
+  _assignBareDateTime,
   bareDateNonOffsetUtcMs,
   bareDateTimeWith,
   emptyBareDateTime,
@@ -25,9 +26,14 @@ import {
   nextValidDateTime,
   offsetSecondsOf,
   validateBareDateTime
-} from './baredatetime';
-import {bareTimeOfMsFromMidnight, cmpBareTimes} from './baretime';
+} from './baredatetime'
 import {
+  _assignBareTime,
+  bareTimeOfMsFromMidnight,
+  cmpBareTimes
+} from './baretime';
+import {
+  _assignBareDate,
   bareDateAdd,
   bareDateOfEpochDay,
   bareDateSubtract,
@@ -90,7 +96,7 @@ export function zonedDateTimeOf(
   applyTo?: ZonedDateTime
 ): ZonedDateTime {
   const dateMs =
-    dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs;
+    (dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs) || 0;
   const offsetSecs = timezoneOffsetSeconds(zone, dateMs);
   const dateSecs = intDiv(dateMs, 1000);
   const dateMsRest = intMod(dateMs, 1000);
@@ -128,7 +134,8 @@ export function fromBareDateTime(
   bareDateTimeLike: Partial<BareDateTime>,
   zone: TimeZone
 ): ZonedDateTime {
-  const bareDateTime = Object.assign(emptyBareDateTime(), bareDateTimeLike);
+  const bareDateTime = emptyBareDateTime();
+  _assignBareDateTime(bareDateTime, bareDateTimeLike);
   const out: ZonedDateTime = {
     timezone: zone,
     year: bareDateTime.year,
@@ -152,14 +159,36 @@ export function cmpZonedDateTimes(
   return dtLeft.epochMilli - dtRight.epochMilli;
 }
 
+function _assignZonedDateTime(
+  copyInto: ZonedDateTime,
+  changes: Partial<ZonedDateTime>
+): ZonedDateTime {
+  _assignBareDate(copyInto, changes);
+  _assignBareTime(copyInto, changes);
+  if (changes.timezone !== undefined) {
+    copyInto.timezone = changes.timezone;
+  }
+  if (changes.epochMilli !== undefined) {
+    copyInto.epochMilli = changes.epochMilli;
+  }
+  if (changes.utcOffsetSeconds !== undefined) {
+    copyInto.utcOffsetSeconds = changes.utcOffsetSeconds;
+  }
+  return copyInto;
+}
+
 export function withZonedDateTime(
   zdt: ZonedDateTime,
   withValues: Partial<BareDateTime>,
   mutateInput = false
 ): ZonedDateTime {
   const out = mutateInput
-    ? Object.assign(zdt, withValues)
-    : Object.assign({}, zdt, withValues);
+    ? zdt
+    : {} as ZonedDateTime;
+  if (!mutateInput) {
+    _assignZonedDateTime(out, zdt);
+  }
+  _assignBareDateTime(out, withValues);
   out.day = Math.min(out.day, isoDaysInMonth(out.year, out.month));
   nextValidDateTime(out.timezone, out, true);
   _updateOffsetAndEpochMilli(out);
@@ -189,8 +218,10 @@ export function zonedDateTimeAdd(
       mutateInput
     );
   }
-  validateZonedDateTime(zdt);
-  const out = mutateInput ? zdt : Object.assign({}, zdt);
+  const out = mutateInput ? zdt : {} as ZonedDateTime;
+  if (!mutateInput) {
+    _assignZonedDateTime(out, zdt);
+  }
   if (includesDateDuration(duration)) {
     bareDateAdd(out, duration, true);
     nextValidDateTime(zdt.timezone, out, true);
@@ -221,8 +252,10 @@ export function zonedDateTimeSubtract(
   if (duration.sign < 0) {
     return zonedDateTimeAdd(zdt, negateBareDuration(duration), mutateInput);
   }
-  validateZonedDateTime(zdt);
-  const out = mutateInput ? zdt : Object.assign({}, zdt);
+  const out = mutateInput ? zdt : {} as ZonedDateTime;
+  if (!mutateInput) {
+    _assignZonedDateTime(out, zdt);
+  }
   if (includesDateDuration(duration)) {
     bareDateSubtract(out, duration, true);
     nextValidDateTime(zdt.timezone, out, true);
