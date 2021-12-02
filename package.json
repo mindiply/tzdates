@@ -1,6 +1,6 @@
 {
   "name": "tzdates",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Bare-bone timezone aware date time functions",
   "main": "./dist/index.js",
   "repository": {
