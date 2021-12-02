@@ -30,28 +30,40 @@ export function bareTime(
   return time;
 }
 
-export function cmpBareTimes(left: BareTime, right: BareTime): number {
-  validateBareTime(left);
-  validateBareTime(right);
+export function cmpBareTimesToHours(left: BareTime, right: BareTime) {
   if (left.hour < right.hour) {
     return -1;
   } else if (left.hour > right.hour) {
     return 1;
-  } else if (left.minute < right.minute) {
-    return -1;
-  } else if (left.minute > right.minute) {
-    return 1;
-  } else if (left.second < right.second) {
-    return -1;
-  } else if (left.second > right.second) {
-    return 1;
-  } else if (left.millisecond < right.millisecond) {
-    return -1;
-  } else if (left.millisecond > right.millisecond) {
-    return 1;
   } else {
     return 0;
   }
+}
+
+export function cmpBareTimesToMinutes(left: BareTime, right: BareTime) {
+  return cmpBareTimesToHours(left, right) || (
+    left.minute < right.minute ? -1 : left.minute > right.minute ? 1 : 0
+  );
+}
+
+export function cmpBareTimesToSecs(left: BareTime, right: BareTime) {
+  return (
+    cmpBareTimesToMinutes(left, right) ||
+    (left.second < right.second ? -1 : left.second > right.second ? 1 : 0)
+  );
+}
+
+export function cmpBareTimes(left: BareTime, right: BareTime): number {
+  validateBareTime(left);
+  validateBareTime(right);
+  return (
+    cmpBareTimesToSecs(left, right) ||
+    (left.millisecond < right.millisecond
+      ? -1
+      : left.millisecond > right.millisecond
+      ? 1
+      : 0)
+  );
 }
 
 export function bareTimeWith(
@@ -86,7 +98,7 @@ export function bareTimeAdd(
   if (duration.sign < 0) {
     return bareTimeSubtract(time, negateBareDuration(duration), isMutable);
   }
-  const outMillis = millisFromMidnight(time) + timeDurationMillis(duration);
+  const outMillis = _millisFromMidnight(time) + timeDurationMillis(duration);
   const modMillis = intMod(outMillis, MILLIS_PER_DAY);
   const modTime = bareTimeFromMillisFromMidnight(modMillis);
   const out = isMutable ? time : modTime;
@@ -110,7 +122,7 @@ export function bareTimeSubtract(
   if (duration.sign < 0) {
     return bareTimeAdd(time, negateBareDuration(duration), isMutable);
   }
-  const timeMs = millisFromMidnight(time);
+  const timeMs = _millisFromMidnight(time);
   const durationMs = timeDurationMillis(duration);
   const outMillis =
     timeMs < durationMs
@@ -126,7 +138,7 @@ export function bareTimeSubtract(
   return out;
 }
 
-function millisFromMidnight(time: BareTime): number {
+export function _millisFromMidnight(time: BareTime): number {
   return (
     time.hour * MILLIS_PER_HOUR +
     time.minute * MILLIS_PER_MINUTE +
@@ -249,7 +261,7 @@ export function bareTimesDistance(
   }
   const earlier = timesCmp < 0 ? left : right;
   const later = timesCmp < 0 ? right : left;
-  let millisDiff = millisFromMidnight(later) - millisFromMidnight(earlier);
+  let millisDiff = _millisFromMidnight(later) - _millisFromMidnight(earlier);
   const hours = intDiv(millisDiff, MILLIS_PER_HOUR);
   millisDiff -= hours * MILLIS_PER_HOUR;
   const minutes = millisDiff > 0 ? intDiv(millisDiff, MILLIS_PER_MINUTE) : 0;

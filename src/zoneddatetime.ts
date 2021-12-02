@@ -2,6 +2,7 @@ import {
   BareDateTime,
   BareDuration,
   DistanceFnOptions,
+  RoundingMode,
   RoundingTimeUnit,
   ZonedDateTime
 } from './types';
@@ -21,15 +22,18 @@ import {
   _assignBareDateTime,
   bareDateNonOffsetUtcMs,
   bareDateTimeWith,
+  cmpBareDateTimes,
   emptyBareDateTime,
   epochMillisecondOf,
   nextValidDateTime,
   offsetSecondsOf,
   validateBareDateTime
-} from './baredatetime'
+} from './baredatetime';
 import {
   _assignBareTime,
+  _millisFromMidnight,
   bareTimeOfMsFromMidnight,
+  bareTimesDistance,
   cmpBareTimes
 } from './baretime';
 import {
@@ -55,6 +59,7 @@ import {
   negateBareDuration,
   roundingUnitPriority,
   secsPriority,
+  timeDurationMillis,
   validateBareDuration,
   yearPriority
 } from './bareduration';
@@ -96,7 +101,8 @@ export function zonedDateTimeOf(
   applyTo?: ZonedDateTime
 ): ZonedDateTime {
   const dateMs =
-    (dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs) || 0;
+    (dateOrEpochMs instanceof Date ? dateOrEpochMs.getTime() : dateOrEpochMs) ||
+    0;
   const offsetSecs = timezoneOffsetSeconds(zone, dateMs);
   const dateSecs = intDiv(dateMs, 1000);
   const dateMsRest = intMod(dateMs, 1000);
@@ -182,9 +188,7 @@ export function withZonedDateTime(
   withValues: Partial<BareDateTime>,
   mutateInput = false
 ): ZonedDateTime {
-  const out = mutateInput
-    ? zdt
-    : {} as ZonedDateTime;
+  const out = mutateInput ? zdt : ({} as ZonedDateTime);
   if (!mutateInput) {
     _assignZonedDateTime(out, zdt);
   }
@@ -218,7 +222,7 @@ export function zonedDateTimeAdd(
       mutateInput
     );
   }
-  const out = mutateInput ? zdt : {} as ZonedDateTime;
+  const out = mutateInput ? zdt : ({} as ZonedDateTime);
   if (!mutateInput) {
     _assignZonedDateTime(out, zdt);
   }
@@ -252,7 +256,7 @@ export function zonedDateTimeSubtract(
   if (duration.sign < 0) {
     return zonedDateTimeAdd(zdt, negateBareDuration(duration), mutateInput);
   }
-  const out = mutateInput ? zdt : {} as ZonedDateTime;
+  const out = mutateInput ? zdt : ({} as ZonedDateTime);
   if (!mutateInput) {
     _assignZonedDateTime(out, zdt);
   }
@@ -292,6 +296,122 @@ export function validateZonedDateTime(zdt: ZonedDateTime) {
 
 function cmpTimeUnits(left: RoundingTimeUnit, right: RoundingTimeUnit) {
   return roundingUnitPriority(left) - roundingUnitPriority(right);
+}
+
+/**
+ * Measures the distance between two zonedDateTimes in a single unit of time.
+ *
+ * It avoids costly operations than using the more general zonedDateTimesDistance function.
+ *
+ * @param {RoundingTimeUnit} unit
+ * @param {ZonedDateTime} left
+ * @param {ZonedDateTime} right
+ * @param {RoundingMode} roundingMode
+ * @returns {number}
+ */
+export function zoneDateTimesUnitsBetween(
+  unit: RoundingTimeUnit,
+  left: ZonedDateTime,
+  right: ZonedDateTime,
+  roundingMode: RoundingMode = 'floor'
+): number {
+  validateZonedDateTime(left);
+  validateZonedDateTime(right);
+  const sameZoneRight = zonedDateTimeToTimezone(right, left.timezone);
+  const cmpLeftRight = cmpZonedDateTimes(left, sameZoneRight);
+  if (cmpLeftRight === 0) {
+    return 0;
+  }
+  let earlier = cmpLeftRight < 0 ? left : sameZoneRight;
+  const later = cmpLeftRight < 0 ? sameZoneRight : left;
+  let amount = 0;
+  if (unit === 'year') {
+    amount = later.year - earlier.year;
+    if (
+      (roundingMode === 'floor' || roundingMode === 'trunc') &&
+      cmpBareDateTimes(earlier, bareDateTimeWith(later, {year: earlier.year})) >
+        0
+    ) {
+      amount--;
+    } else if (roundingMode === 'halfExpand') {
+      if ((toEpochDay(later) - toEpochDay(earlier)) * 2 < 365) {
+        amount--;
+      }
+    }
+  } else if (unit === 'month') {
+    amount =
+      12 * later.year + later.month - (12 * earlier.year + earlier.month);
+    if (
+      (roundingMode === 'floor' || roundingMode === 'trunc') &&
+      later.day <= earlier.day
+    ) {
+      const laterDay =
+        later.day < earlier.day &&
+        later.day === isoDaysInMonth(later.year, later.month)
+          ? 31
+          : later.day;
+      if (laterDay < earlier.day || cmpBareTimes(later, earlier) < 0) {
+        // If the later day is the end of the month, we still consider a full month to have passed.
+        amount--;
+      }
+    } else if (roundingMode === 'halfExpand') {
+      if (
+        (isoDaysInMonth(earlier.year, earlier.month) - earlier.day) * 2 <
+        30
+      ) {
+        amount--;
+      }
+    }
+  } else if (unit === 'day') {
+    amount = toEpochDay(later) - toEpochDay(earlier);
+    if (
+      (roundingMode === 'floor' || roundingMode === 'trunc') &&
+      cmpBareTimes(later, earlier) < 0
+    ) {
+      amount--;
+    } else if (roundingMode === 'halfExpand') {
+      const timesMsDuration =
+        amount === 0
+          ? timeDurationMillis(bareTimesDistance(earlier, later))
+          : MILLIS_PER_DAY -
+            _millisFromMidnight(earlier) +
+            _millisFromMidnight(later);
+      if (timesMsDuration * 2 < MILLIS_PER_DAY) {
+        amount--;
+      } else if (timesMsDuration * 2 >= 1.5 * MILLIS_PER_DAY) {
+        amount++;
+      }
+    } else if (roundingMode === 'ceil' && cmpBareTimes(earlier, later) < 0) {
+      amount++;
+    }
+  } else {
+    const msDistance = later.epochMilli - earlier.epochMilli;
+    if (unit === 'millisecond') {
+      amount =
+        roundingMode === 'floor' || roundingMode === 'trunc'
+          ? Math.floor(msDistance)
+          : roundingMode === 'halfExpand'
+          ? Math.round(msDistance)
+          : Math.ceil(msDistance);
+    } else {
+      const divider =
+        unit === 'second'
+          ? MILLIS_PER_SECOND
+          : unit === 'minute'
+          ? MILLIS_PER_MINUTE
+          : unit === 'hour'
+          ? MILLIS_PER_HOUR
+          : 1;
+      amount = intDiv(msDistance, divider);
+      const rest = msDistance - amount * divider;
+      if (roundingMode === 'ceil' && rest > 0) {
+        amount++;
+      } else if (roundingMode === 'halfExpand' && rest * 2 >= divider) {
+        amount++;
+      }
+    }
+  }
+  return cmpLeftRight <= 0 ? amount : 0 - amount;
 }
 
 export function zonedDateTimesDistance(

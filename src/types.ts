@@ -69,8 +69,10 @@ export interface ZonedDateTime extends BareDateTime {
 
 export type RoundingTimeUnit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond';
 
+export type RoundingMode = 'halfExpand' | 'ceil' | 'trunc' | 'floor';
+
 export interface DistanceFnOptions {
   largestUnit?: RoundingTimeUnit;
   smallestUnit?: RoundingTimeUnit;
-  roundingMode?: 'halfExpand' | 'ceil' | 'trunc' | 'floor'
+  roundingMode?: RoundingMode;
 }

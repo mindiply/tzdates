@@ -1,8 +1,4 @@
-import {
-  BareDate,
-  BareDuration,
-  DistanceFnOptions
-} from './types'
+import {BareDate, BareDuration, DistanceFnOptions} from './types';
 import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts';
 import {intDiv, intMod, roundDown} from './mathutils';
 import {
@@ -42,18 +38,41 @@ export function validateBareDate(date: BareDate) {
   }
 }
 
-export function cmpBareDates(left: BareDate, right: BareDate) {
+export function cmpMonthDay(
+  left: Omit<BareDate, 'year'>,
+  right: Omit<BareDate, 'year'>
+): number {
+  if (left.month < right.month) {
+    return -1;
+  } else if (left.month > right.month) {
+    return 1;
+  } else if (left.day < right.day) {
+    return -1;
+  } else if (left.day > right.day) {
+    return 1;
+  }
+  return 0;
+}
+
+export function cmpBareDatesToYear(left: BareDate, right: BareDate) {
   if (left.year < right.year) {
     return -1;
   } else if (left.year > right.year) {
     return 1;
-  } else if (left.month < right.month) {
-    return -1;
-  } else if (left.month > right.month) {
-    return 1;
   } else {
-    return left.day - right.day;
+    return 0;
   }
+}
+
+export function cmpBareDatesToMonth(left: BareDate, right: BareDate) {
+  return (
+    cmpBareDatesToYear(left, right) ||
+    (left.month < right.month ? -1 : left.month > right.month ? 1 : 0)
+  );
+}
+
+export function cmpBareDates(left: BareDate, right: BareDate) {
+  return cmpBareDatesToMonth(left, right) || left.day - right.day;
 }
 
 export function bareDate(year = 1970, month = 1, day = 1) {
@@ -81,7 +100,9 @@ export function bareDateWith(
   changes: Partial<BareDate>,
   mutateInput = false
 ) {
-  const out = mutateInput ? bareDate : _assignBareDate({} as BareDate, bareDate);
+  const out = mutateInput
+    ? bareDate
+    : _assignBareDate({} as BareDate, bareDate);
   if (typeof changes.year !== 'undefined') {
     out.year = changes.year;
   }
@@ -115,7 +136,9 @@ export function bareDateAdd(
   mutateInput = false
 ): BareDate {
   validateBareDateDuration(duration);
-  const out = mutateInput ? bareDate : _assignBareDate({} as BareDate, bareDate);
+  const out = mutateInput
+    ? bareDate
+    : _assignBareDate({} as BareDate, bareDate);
   if (duration.sign < 0) {
     return bareDateSubtract(
       bareDate,
@@ -155,7 +178,9 @@ export function bareDateSubtract(
   mutateInput = false
 ): BareDate {
   validateBareDateDuration(duration);
-  const out = mutateInput ? bareDate : _assignBareDate({} as BareDate, bareDate);
+  const out = mutateInput
+    ? bareDate
+    : _assignBareDate({} as BareDate, bareDate);
   if (duration.sign < 0) {
     return bareDateAdd(bareDate, negateBareDuration(duration), mutateInput);
   }
@@ -442,22 +467,6 @@ export function bareDateOfEpochDay(
   return out;
 }
 
-export function cmpMonthDay(
-  left: Omit<BareDate, 'year'>,
-  right: Omit<BareDate, 'year'>
-): number {
-  if (left.month < right.month) {
-    return -1;
-  } else if (left.month > right.month) {
-    return 1;
-  } else if (left.day < right.day) {
-    return -1;
-  } else if (left.day > right.day) {
-    return 1;
-  }
-  return 0;
-}
-
 export function bareDatesDistance(
   left: BareDate,
   right: BareDate,
@@ -512,7 +521,8 @@ export function bareDatesDistance(
     }
   }
   if (largestPriority >= monthPriority && smallestPriority <= monthPriority) {
-    months = later.year * 12 + later.month - (earlier.year * 12 + earlier.month);
+    months =
+      later.year * 12 + later.month - (earlier.year * 12 + earlier.month);
     if (later.day < earlier.day && months > 0) {
       months--;
     }
@@ -572,7 +582,10 @@ export function bareDateToString(bareDate: BareDate): string {
   }`;
 }
 
-export function _assignBareDate(copyInto: BareDate, changes: Partial<BareDate>): BareDate {
+export function _assignBareDate(
+  copyInto: BareDate,
+  changes: Partial<BareDate>
+): BareDate {
   if (changes.year !== undefined) {
     copyInto.year = changes.year;
   }

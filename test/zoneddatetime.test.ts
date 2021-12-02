@@ -4,11 +4,13 @@ import {
   fromBareDateTime,
   MILLIS_PER_SECOND,
   TimeZone,
+  zoneDateTimesUnitsBetween,
   zonedDateTimeAdd,
   zonedDateTimeOf,
   zonedDateTimesDistance,
   zonedDateTimeSubtract
 } from '../src';
+import {MILLIS_PER_DAY} from '../dist'
 
 describe('constructors', () => {
   describe('fromBareDateTime', () => {
@@ -486,7 +488,7 @@ describe('zonedDateTimesDistance', () => {
         fromBareDateTime(bareDateTime(2024, 1, 1, 1), TimeZone.EUROPE__ROME),
         fromBareDateTime(bareDateTime(2025, 2, 1, 0), TimeZone.UTC)
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 366+31));
+    ).toMatchObject(bareDuration(1, 0, 0, 366 + 31));
   });
 
   test('Positive negative distances', () => {
@@ -531,39 +533,69 @@ describe('zonedDateTimesDistance', () => {
         fromBareDateTime(bareDateTime(2025, 2, 1, 0), TimeZone.UTC),
         fromBareDateTime(bareDateTime(2024, 1, 1, 1), TimeZone.EUROPE__ROME)
       )
-    ).toMatchObject(bareDuration(-1, 0, 0, 366+31));
+    ).toMatchObject(bareDuration(-1, 0, 0, 366 + 31));
   });
 
   test('Around daylight time saving', () => {
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2014, 3, 8, 2, 30), TimeZone.AMERICA__LOS_ANGELES),
-        fromBareDateTime(bareDateTime(2014, 3, 9, 3), TimeZone.AMERICA__LOS_ANGELES)
+        fromBareDateTime(
+          bareDateTime(2014, 3, 8, 2, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        ),
+        fromBareDateTime(
+          bareDateTime(2014, 3, 9, 3),
+          TimeZone.AMERICA__LOS_ANGELES
+        )
       )
     ).toMatchObject(bareDuration(1, 0, 0, 1));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2014, 3, 8, 0, 30), TimeZone.AMERICA__LOS_ANGELES),
-        fromBareDateTime(bareDateTime(2014, 3, 9, 1, 30), TimeZone.AMERICA__LOS_ANGELES)
+        fromBareDateTime(
+          bareDateTime(2014, 3, 8, 0, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        ),
+        fromBareDateTime(
+          bareDateTime(2014, 3, 9, 1, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        )
       )
     ).toMatchObject(bareDuration(1, 0, 0, 1, 1));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2014, 3, 8, 2, 30), TimeZone.AMERICA__LOS_ANGELES),
-        fromBareDateTime(bareDateTime(2014, 3, 9, 3, 30), TimeZone.AMERICA__LOS_ANGELES)
+        fromBareDateTime(
+          bareDateTime(2014, 3, 8, 2, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        ),
+        fromBareDateTime(
+          bareDateTime(2014, 3, 9, 3, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        )
       )
     ).toMatchObject(bareDuration(1, 0, 0, 1, 0, 30));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2014, 3, 9, 3, 30), TimeZone.AMERICA__LOS_ANGELES),
-        fromBareDateTime(bareDateTime(2014, 3, 8, 2, 30), TimeZone.AMERICA__LOS_ANGELES)
+        fromBareDateTime(
+          bareDateTime(2014, 3, 9, 3, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        ),
+        fromBareDateTime(
+          bareDateTime(2014, 3, 8, 2, 30),
+          TimeZone.AMERICA__LOS_ANGELES
+        )
       )
     ).toMatchObject(bareDuration(-1, 0, 0, 1, 0, 30));
 
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2019, 10, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2019, 10, 25, 3, 30), TimeZone.ASIA__AMMAN)
+        fromBareDateTime(
+          bareDateTime(2019, 10, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2019, 10, 25, 3, 30),
+          TimeZone.ASIA__AMMAN
+        )
       )
     ).toMatchObject(bareDuration(1, 0, 0, 5, 1));
   });
@@ -571,65 +603,489 @@ describe('zonedDateTimesDistance', () => {
   test('Use rounding options', () => {
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN)
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        )
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25, 1, 5, 23, 998));
+    ).toMatchObject(bareDuration(1, 0, 0, 365 + 11 + 25, 1, 5, 23, 998));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {smallestUnit: 'day'}
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25));
+    ).toMatchObject(bareDuration(1, 0, 0, 365 + 11 + 25));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {smallestUnit: 'day', roundingMode: 'halfExpand'}
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25));
+    ).toMatchObject(bareDuration(1, 0, 0, 365 + 11 + 25));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {smallestUnit: 'day', roundingMode: 'ceil'}
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 365+11+25+1));
+    ).toMatchObject(bareDuration(1, 0, 0, 365 + 11 + 25 + 1));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {largestUnit: 'hour'}
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 0, (365+11+25)*24 + 1, 5, 23, 998));
+    ).toMatchObject(
+      bareDuration(1, 0, 0, 0, (365 + 11 + 25) * 24 + 1, 5, 23, 998)
+    );
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {largestUnit: 'minute', smallestUnit: 'minute', roundingMode: 'ceil'}
       )
-    ).toMatchObject(bareDuration(1, 0, 0, 0, 0, ((365+11+25)*24 + 1) * 60 + 5 + 1));
+    ).toMatchObject(
+      bareDuration(1, 0, 0, 0, 0, ((365 + 11 + 25) * 24 + 1) * 60 + 5 + 1)
+    );
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {largestUnit: 'year', smallestUnit: 'month', roundingMode: 'ceil'}
       )
     ).toMatchObject(bareDuration(1, 1, 2));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
         {largestUnit: 'month', smallestUnit: 'day'}
       )
     ).toMatchObject(bareDuration(1, 0, 13, 5));
     expect(
       zonedDateTimesDistance(
-        fromBareDateTime(bareDateTime(2024, 2, 25, 3, 35, 23, 998), TimeZone.ASIA__AMMAN),
-        fromBareDateTime(bareDateTime(2023, 1, 20, 2, 30), TimeZone.ASIA__AMMAN),
+        fromBareDateTime(
+          bareDateTime(2024, 2, 25, 3, 35, 23, 998),
+          TimeZone.ASIA__AMMAN
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 20, 2, 30),
+          TimeZone.ASIA__AMMAN
+        ),
         {largestUnit: 'month', smallestUnit: 'day'}
       )
     ).toMatchObject(bareDuration(-1, 0, 13, 5));
-  })
+  });
+});
+
+describe('zoneDateTimesUnitsBetween', () => {
+  test('years', () => {
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'floor'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'ceil'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'halfExpand'
+      )
+    ).toBe(0);
+
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(2);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 1, 1, 12),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(1);
+
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'ceil'
+      )
+    ).toBe(-1);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        fromBareDateTime(
+          bareDateTime(2022, 7, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(1);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'year',
+        fromBareDateTime(
+          bareDateTime(2022, 7, 3, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(0);
+  });
+
+  test('months', () => {
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'floor'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'ceil'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'halfExpand'
+      )
+    ).toBe(0);
+
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(24);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 1, 1, 12),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(23);
+
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2022, 12, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'ceil'
+      )
+    ).toBe(-1);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        fromBareDateTime(
+          bareDateTime(2022, 7, 15, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(6);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'month',
+        fromBareDateTime(
+          bareDateTime(2022, 7, 17, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(5);
+  });
+
+  test('days', () => {
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'floor'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'ceil'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        zonedDateTimeOf(0, TimeZone.EUROPE__LONDON),
+        'halfExpand'
+      )
+    ).toBe(0);
+
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(365*2);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        fromBareDateTime(
+          bareDateTime(2022, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2024, 1, 1, 12),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(365+364);
+
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 12, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2022, 12, 1, 12),
+          TimeZone.ASIA__TOKYO
+        ),
+        'ceil'
+      )
+    ).toBe(-32);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        fromBareDateTime(
+          bareDateTime(2022, 12, 15, 12),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(17);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        fromBareDateTime(
+          bareDateTime(2022, 12, 15, 10),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1, 23),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(18);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'day',
+        fromBareDateTime(
+          bareDateTime(2022, 12, 15, 23),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(16);
+  });
+
+  test('Hours', () => {
+    expect(
+      zoneDateTimesUnitsBetween(
+        'hour',
+        zonedDateTimeOf(2020 * 366 * MILLIS_PER_DAY, TimeZone.AMERICA__LOS_ANGELES),
+        zonedDateTimeOf(2020 * 366 * MILLIS_PER_DAY, TimeZone.AMERICA__LOS_ANGELES),
+        'ceil'
+      )
+    ).toBe(0);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'hour',
+        fromBareDateTime(
+          bareDateTime(2022, 12, 15, 23, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1),
+          TimeZone.ASIA__TOKYO
+        ),
+        'floor'
+      )
+    ).toBe(16 * 24);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'hour',
+        fromBareDateTime(
+          bareDateTime(2022, 12, 15, 23, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1),
+          TimeZone.ASIA__TOKYO
+        ),
+        'ceil'
+      )
+    ).toBe(16 * 24 + 1);
+    expect(
+      zoneDateTimesUnitsBetween(
+        'hour',
+        fromBareDateTime(
+          bareDateTime(2022, 12, 15, 23, 30),
+          TimeZone.ASIA__TOKYO
+        ),
+        fromBareDateTime(
+          bareDateTime(2023, 1, 1),
+          TimeZone.ASIA__TOKYO
+        ),
+        'halfExpand'
+      )
+    ).toBe(16 * 24 + 1);
+  });
 });

@@ -27,7 +27,10 @@ export {
   bareTimeSubtract,
   cmpBareTimes,
   bareTimeToString,
-  bareTimesDistance
+  bareTimesDistance,
+  cmpBareTimesToSecs,
+  cmpBareTimesToHours,
+  cmpBareTimesToMinutes
 } from './baretime';
 export {
   bareDate,
@@ -43,13 +46,16 @@ export {
   toEpochDay,
   bareDateOfEpochDay,
   bareDatesDistance,
-  bareDateToString
+  bareDateToString,
+  cmpBareDatesToMonth,
+  cmpBareDatesToYear
 } from './baredate';
 export {
   bareDateTime,
   bareDateTimeFrom,
   offsetSecondsOf,
-  bareDateTimeWith
+  bareDateTimeWith,
+  cmpBareDateTimes
 } from './baredatetime';
 export {
   zonedDateTimeOf,
@@ -58,5 +64,7 @@ export {
   zonedDateTimeAdd,
   zonedDateTimeSubtract,
   zonedDateTimesDistance,
-  withZonedDateTime
+  withZonedDateTime,
+  zonedDateTimeToTimezone,
+  zoneDateTimesUnitsBetween
 } from './zoneddatetime';

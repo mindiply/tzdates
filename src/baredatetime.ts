@@ -16,11 +16,13 @@ import {
 import {
   _assignBareTime,
   bareTimeOfMsFromMidnight,
+  cmpBareTimes,
   validateBareTime
 } from './baretime';
 import {
   _assignBareDate,
   bareDateOfEpochDay,
+  cmpBareDates,
   isoDaysInMonth,
   toEpochDay,
   validateBareDate
@@ -324,4 +326,19 @@ export function _assignBareDateTime(
   _assignBareDate(copyInto, changes);
   _assignBareTime(copyInto, changes);
   return copyInto;
+}
+
+/**
+ * Compares two bareDateTimes assuming they are of the same
+ * timezone, with no day savelight time information attached.
+ *
+ * @param {BareDateTime} left
+ * @param {BareDateTime} right
+ * @returns {number}
+ */
+export function cmpBareDateTimes(
+  left: BareDateTime,
+  right: BareDateTime
+): number {
+  return cmpBareDates(left, right) || cmpBareTimes(left, right);
 }
