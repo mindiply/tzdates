@@ -1,13 +1,12 @@
-import {tzdbPackedData} from './zonesData';
+import {tzdbPackedData} from './zonesData'
 import {unpackZonesData} from './tzDataSerialization'
 import {TimeZoneData, UnknownTimezoneError} from './types'
 import {TimeZone} from './timezones'
-import {roundDown} from './mathutils'
 
 const timezonesOffsets = unpackZonesData(tzdbPackedData);
 
 export function getTimezoneData(ianaTimezone: TimeZone): TimeZoneData {
-  const timezoneData = timezonesOffsets.get(ianaTimezone.toUpperCase());
+  const timezoneData = timezonesOffsets.get(ianaTimezone);
   if (!timezoneData) {
     throw new UnknownTimezoneError(`Timezone ${ianaTimezone} not recognized`)
   }
@@ -26,7 +25,7 @@ export function getTimezoneData(ianaTimezone: TimeZone): TimeZoneData {
  * @param {number} millisFromEpoch
  * @returns {number}
  */
-export function timezoneOffset(ianaTimezone: TimeZone, millisFromEpoch: number): number {
+export function timezoneOffsetSeconds(ianaTimezone: TimeZone, millisFromEpoch: number): number {
   const timezoneData = getTimezoneData(ianaTimezone);
   if (typeof millisFromEpoch !== 'number' || millisFromEpoch === NaN) {
     throw new TypeError('Expecting a valid number of milliseconds from epoch');
@@ -36,18 +35,6 @@ export function timezoneOffset(ianaTimezone: TimeZone, millisFromEpoch: number):
     throw new Error('Unable to find offset for time stamp');
   }
   return timezoneData.offsets[index];
-}
-
-export function timezoneOffsetSeconds(ianaTimezone: TimeZone, millisFromEpoch: number): number {
-  return fractionalMinutesToSeconds(timezoneOffset(ianaTimezone, millisFromEpoch));
-}
-
-export function fractionalMinutesToSeconds(fractionalMinutes: number): number {
-  const intMinutes = roundDown(fractionalMinutes);
-  if (intMinutes === fractionalMinutes) {
-    return intMinutes * 60;
-  }
-  return roundDown(60 * intMinutes + Math.round(60 * (fractionalMinutes - intMinutes)));
 }
 
 // modified bin-search, to always find existing indices for non-empty arrays

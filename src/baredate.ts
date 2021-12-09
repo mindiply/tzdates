@@ -380,7 +380,7 @@ function cumulativeNegativeCycleYearsDays(): number[] {
 }
 
 /**
- * Given a bare date, it returns the number of days since the unix epcoch Jan 1st 1970.
+ * Given a bare date, it returns the number of days since the unix epoch Jan 1st 1970.
  * For dates before the unix epoch it returns negative values.
  *
  * @param {BareDate} bareDate

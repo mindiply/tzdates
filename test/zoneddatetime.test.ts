@@ -8,9 +8,9 @@ import {
   zonedDateTimeAdd,
   zonedDateTimeOf,
   zonedDateTimesDistance,
-  zonedDateTimeSubtract
+  zonedDateTimeSubtract,
+  MILLIS_PER_DAY
 } from '../src';
-import {MILLIS_PER_DAY} from '../dist'
 
 describe('constructors', () => {
   describe('fromBareDateTime', () => {

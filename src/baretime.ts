@@ -41,8 +41,9 @@ export function cmpBareTimesToHours(left: BareTime, right: BareTime) {
 }
 
 export function cmpBareTimesToMinutes(left: BareTime, right: BareTime) {
-  return cmpBareTimesToHours(left, right) || (
-    left.minute < right.minute ? -1 : left.minute > right.minute ? 1 : 0
+  return (
+    cmpBareTimesToHours(left, right) ||
+    (left.minute < right.minute ? -1 : left.minute > right.minute ? 1 : 0)
   );
 }
 
@@ -89,10 +90,13 @@ export function bareTimeAdd(
   inpDuration: Partial<BareTimeDuration>,
   isMutable = false
 ): BareTime {
-  const duration = Object.assign(
-    {sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0},
-    inpDuration
-  );
+  const duration: BareTimeDuration = {
+    sign: typeof inpDuration.sign === 'number' ? inpDuration.sign : 1,
+    hours: inpDuration.hours || 0,
+    minutes: inpDuration.minutes || 0,
+    seconds: inpDuration.seconds || 0,
+    milliseconds: inpDuration.milliseconds || 0
+  };
   validateBareTime(time);
   validateBareTimeDuration(duration);
   if (duration.sign < 0) {
@@ -114,10 +118,13 @@ export function bareTimeSubtract(
   inpDuration: Partial<BareTimeDuration>,
   isMutable = false
 ): BareTime {
-  const duration = Object.assign(
-    {sign: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0},
-    inpDuration
-  );
+  const duration: BareTimeDuration = {
+    sign: typeof inpDuration.sign === 'number' ? inpDuration.sign : 1,
+    hours: inpDuration.hours || 0,
+    minutes: inpDuration.minutes || 0,
+    seconds: inpDuration.seconds || 0,
+    milliseconds: inpDuration.milliseconds || 0
+  };
   validateBareTimeDuration(duration);
   if (duration.sign < 0) {
     return bareTimeAdd(time, negateBareDuration(duration), isMutable);

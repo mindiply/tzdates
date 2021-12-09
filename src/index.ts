@@ -12,7 +12,7 @@ export {
 } from './types';
 export * from './consts';
 export {TimeZone} from './timezones';
-export {timezoneOffset} from './tzOffset';
+export {timezoneOffsetSeconds} from './tzOffset';
 export {
   bareDuration,
   weeksBareDuration,
@@ -55,7 +55,9 @@ export {
   bareDateTimeFrom,
   offsetSecondsOf,
   bareDateTimeWith,
-  cmpBareDateTimes
+  cmpBareDateTimes,
+  bareDateTimeSubtract,
+  bareDateTimeAdd
 } from './baredatetime';
 export {
   zonedDateTimeOf,

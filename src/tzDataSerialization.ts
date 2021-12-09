@@ -1,4 +1,5 @@
 import {IncorrectTimezoneData, TimeZoneData, UnpackedZoneBundle} from './types'
+import {roundDown} from './mathutils'
 
 const BASE60 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX';
 const EPSILON = 0.000001; // Used to fix floating point rounding errors
@@ -159,6 +160,15 @@ function charCodeToInt(charCode: number): number {
 }
 
 const offsetsPartsRe = /a([0-9a-zA-Z-\.\s]+)\*([0-9a-zA-Z]+)/;
+
+function fractionalMinutesToSeconds(fractionalMinutes: number): number {
+  const intMinutes = roundDown(fractionalMinutes)
+  if (intMinutes === fractionalMinutes) {
+    return intMinutes * 60
+  }
+  return roundDown(60 * intMinutes + Math.round(60 * (fractionalMinutes - intMinutes)))
+}
+
 function unpackOffsets(packedOffsetsStr: string): number[] {
   const offsets: number[] = [];
   if (packedOffsetsStr[0] === 'a' || packedOffsetsStr[0] === 'b') {
@@ -166,7 +176,7 @@ function unpackOffsets(packedOffsetsStr: string): number[] {
     if (parts) {
       const offsetsList = parts[1]
         .split(' ')
-        .map(offsetStr => unpackBase60(offsetStr));
+        .map(offsetStr => fractionalMinutesToSeconds(unpackBase60(offsetStr)));
       for (const indexStr of parts[2]) {
         const index =
           offsetsList.length <= 10
@@ -179,7 +189,7 @@ function unpackOffsets(packedOffsetsStr: string): number[] {
     return packedOffsetsStr
       .substr(1)
       .split(' ')
-      .map(offsetStr => unpackBase60(offsetStr));
+      .map(offsetStr => fractionalMinutesToSeconds(unpackBase60(offsetStr)));
   }
   for (let i = 0; i < offsets.length; i++) {
     offsets[i] = offsets[i] === 0 ? 0 : 0 - offsets[i];
@@ -216,5 +226,5 @@ export function unpackZonesData(packedData: string): Map<string, TimeZoneData> {
       throw new IncorrectTimezoneData(`Incorrect data for zone ${zone.name}`);
     }
   }
-  return new Map(zones.map(zone => [zone.name.toUpperCase(), zone]));
+  return new Map(zones.map(zone => [zone.name, zone]));
 }

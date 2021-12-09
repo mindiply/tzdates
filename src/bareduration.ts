@@ -172,7 +172,7 @@ export function bareDuration(
 }
 
 export function fromDuration(duration: BareDuration): BareDuration {
-  return {...duration};
+  return Object.assign({}, duration);
 }
 
 function isNonWeeksDuration(duration: BareDuration): boolean {
@@ -202,7 +202,19 @@ export function timeDurationMillis(duration: BareTimeDuration) {
 }
 
 export function absBareDuration(duration: BareDuration): BareDuration {
-  return duration.sign >= 0 ? duration : {...duration, sign: 1};
+  return duration.sign >= 0
+    ? duration
+    : {
+        sign: 1,
+        years: duration.years,
+        months: duration.months,
+        weeks: duration.weeks,
+      days: duration.days,
+        hours: duration.hours,
+        minutes: duration.minutes,
+      seconds: duration.seconds,
+      milliseconds: duration.milliseconds
+      };
 }
 
 export function negateBareDuration<T extends BareSignedDuration>(
@@ -210,10 +222,7 @@ export function negateBareDuration<T extends BareSignedDuration>(
 ): T {
   return duration.sign === 0
     ? duration
-    : {
-        ...duration,
-        sign: duration.sign === 1 ? -1 : 1
-      };
+    : Object.assign({}, duration, {sign: duration.sign === 1 ? -1 : 1});
 }
 
 export function cmpBareDurations(left: BareDuration, right: BareDuration) {

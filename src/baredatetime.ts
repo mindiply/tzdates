@@ -1,10 +1,6 @@
 import {TimeZone} from './timezones';
-import {BareDateTime} from './types';
-import {
-  fractionalMinutesToSeconds,
-  getTimezoneData,
-  timezoneOffsetSeconds
-} from './tzOffset';
+import {BareDateTime, BareDuration, ZonedDateTime} from './types';
+import {getTimezoneData, timezoneOffsetSeconds} from './tzOffset';
 import {intDiv, intMod} from './mathutils';
 import {
   MILLIS_PER_DAY,
@@ -15,18 +11,27 @@ import {
 } from './consts';
 import {
   _assignBareTime,
+  _millisFromMidnight,
   bareTimeOfMsFromMidnight,
   cmpBareTimes,
   validateBareTime
 } from './baretime';
 import {
   _assignBareDate,
+  bareDateAdd,
   bareDateOfEpochDay,
+  bareDateSubtract,
   cmpBareDates,
   isoDaysInMonth,
   toEpochDay,
   validateBareDate
 } from './baredate';
+import {
+  includesDateDuration,
+  includesTimeDuration,
+  negateBareDuration,
+  validateBareDuration
+} from './bareduration';
 
 export function emptyBareDateTime(): BareDateTime {
   return {
@@ -121,6 +126,74 @@ export function bareDateTimeWith(
   return out;
 }
 
+export function bareDateTimeAdd(
+  dateTime: BareDateTime,
+  duration: BareDuration,
+  mutateInput = false
+): BareDateTime {
+  validateBareDuration(duration);
+  if (duration.sign === 0) {
+    return dateTime;
+  }
+  if (duration.sign < 0) {
+    return bareDateTimeSubtract(
+      dateTime,
+      negateBareDuration(duration),
+      mutateInput
+    );
+  }
+  const out = mutateInput ? dateTime : ({} as BareDateTime);
+  if (!mutateInput) {
+    _assignBareDateTime(out, dateTime);
+  }
+  if (includesDateDuration(duration)) {
+    bareDateAdd(out, duration, true);
+  }
+  if (includesTimeDuration(duration)) {
+    const totalMs =
+      duration.hours * MILLIS_PER_HOUR +
+      duration.minutes * MILLIS_PER_MINUTE +
+      duration.seconds * MILLIS_PER_SECOND +
+      duration.milliseconds;
+    const endMs = totalMs + bareDateNonOffsetUtcMs(out);
+    _assignBareDateTime(out, bareDateTimeFromUtcMs(endMs));
+  }
+  validateBareDateTime(out);
+  return out;
+}
+
+export function bareDateTimeSubtract(
+  dateTime: BareDateTime,
+  duration: BareDuration,
+  mutateInput = false
+): BareDateTime {
+  validateBareDuration(duration);
+  if (duration.sign === 0) {
+    return dateTime;
+  }
+  if (duration.sign < 0) {
+    return bareDateTimeAdd(dateTime, negateBareDuration(duration), mutateInput);
+  }
+  const out = mutateInput ? dateTime : ({} as ZonedDateTime);
+  if (!mutateInput) {
+    _assignBareDateTime(out, dateTime);
+  }
+  if (includesDateDuration(duration)) {
+    bareDateSubtract(out, duration, true);
+  }
+  if (includesTimeDuration(duration)) {
+    const totalMs =
+      duration.hours * MILLIS_PER_HOUR +
+      duration.minutes * MILLIS_PER_MINUTE +
+      duration.seconds * MILLIS_PER_SECOND +
+      duration.milliseconds;
+    const endMs = bareDateNonOffsetUtcMs(out) - totalMs;
+    _assignBareDateTime(out, bareDateTimeFromUtcMs(endMs));
+  }
+  validateBareDateTime(out);
+  return out;
+}
+
 /**
  * For each timezone stores an array that is double the size of the untils
  * array of the tzDatabase.
@@ -153,7 +226,7 @@ export function offsetSecondsOf(
   const intervals = getZoneIntervals(zone);
   const ldtMsVal = bareDateNonOffsetUtcMs(localDateTime);
   const index = bsLookupOffsetForBareDateTimeMs(intervals, ldtMsVal);
-  return fractionalMinutesToSeconds(getTimezoneData(zone).offsets[index]);
+  return getTimezoneData(zone).offsets[index];
 }
 
 export function epochMillisecondOf(
@@ -276,6 +349,7 @@ const yearZeroMs = Date.UTC(-1, 11, 31, 23, 59, 59, 999) + 1;
  * @returns {number}
  */
 export function bareDateNonOffsetUtcMs(dateTime: BareDateTime) {
+  return toEpochDay(dateTime) * MILLIS_PER_DAY + _millisFromMidnight(dateTime);
   if (dateTime.year >= 0 && dateTime.year < 100) {
     const nDaysSinceZero = toEpochDay(dateTime) - yearZeroEpochDay;
     return (

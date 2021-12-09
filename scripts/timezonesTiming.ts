@@ -2,7 +2,7 @@ import {
   bareDateTimeFrom,
   zonedDateTimeOf,
   TimeZone,
-  timezoneOffset,
+  timezoneOffsetSeconds,
   withZonedDateTime,
   fromBareDateTime
 } from '../src/index';
@@ -20,7 +20,7 @@ async function main() {
       epochMs < 1.3e10;
       epochMs += delta, delta = delta * iterationInterest, i++
     ) {
-      timezoneOffset(testTimezone, epochMs);
+      timezoneOffsetSeconds(testTimezone, epochMs);
     }
   }
   let endMs = new Date().getTime();
