@@ -8,10 +8,10 @@ import {
 
 describe('duration', () => {
   test('Invalid durations', () => {
-    expect(() => bareDuration(1, 25, -13)).toThrowError(TypeError);
-    expect(() => bareDuration(-1, 25, 15, -1)).toThrowError(TypeError);
-    expect(() => weeksBareDuration(1, -12)).toThrowError(TypeError);
-    expect(() => weeksBareDuration(-1, -12)).toThrowError(TypeError);
+    expect(() => bareDuration(1, 25, -13)).toThrow(TypeError);
+    expect(() => bareDuration(-1, 25, 15, -1)).toThrow(TypeError);
+    expect(() => weeksBareDuration(1, -12)).toThrow(TypeError);
+    expect(() => weeksBareDuration(-1, -12)).toThrow(TypeError);
   });
 
   test('non-week constructor', () => {

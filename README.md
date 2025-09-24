@@ -1,6 +1,6 @@
 # tzdates
 
-Compact timezone conscious date library build for speed.
+Compact timezone conscious date library built for speed.
 If you don't need to compute hundreds/thousand of date operations
 in a second, you are probably better of with date-fns or js-joda.
 

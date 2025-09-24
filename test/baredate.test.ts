@@ -37,18 +37,18 @@ describe('isLeapYear', () => {
 
 describe('creation and validation', () => {
   test('throw on invalid dates', () => {
-    expect(() => bareDate(0, 0.1)).toThrowError(TypeError);
-    expect(() => bareDate(0, 1, -12)).toThrowError(TypeError);
-    expect(() => bareDate(0, 2, 30)).toThrowError(TypeError);
-    expect(() => bareDate(1600, 2, 28)).not.toThrowError();
-    expect(() => bareDate(1600, 2, 29)).not.toThrowError();
-    expect(() => bareDate(1600, 2, 30)).toThrowError(TypeError);
-    expect(() => bareDate(2001, 2, 28)).not.toThrowError();
-    expect(() => bareDate(2001, 2, 29)).toThrowError(TypeError);
-    expect(() => bareDate(2000, 2, 29)).not.toThrowError(TypeError);
-    expect(() => bareDate(2000, 2, 30)).toThrowError(TypeError);
-    expect(() => bareDate(2004, 2, 29)).not.toThrowError(TypeError);
-    expect(() => bareDate(2004, 2, 30)).toThrowError(TypeError);
+    expect(() => bareDate(0, 0.1)).toThrow(TypeError);
+    expect(() => bareDate(0, 1, -12)).toThrow(TypeError);
+    expect(() => bareDate(0, 2, 30)).toThrow(TypeError);
+    expect(() => bareDate(1600, 2, 28)).not.toThrow();
+    expect(() => bareDate(1600, 2, 29)).not.toThrow();
+    expect(() => bareDate(1600, 2, 30)).toThrow(TypeError);
+    expect(() => bareDate(2001, 2, 28)).not.toThrow();
+    expect(() => bareDate(2001, 2, 29)).toThrow(TypeError);
+    expect(() => bareDate(2000, 2, 29)).not.toThrow(TypeError);
+    expect(() => bareDate(2000, 2, 30)).toThrow(TypeError);
+    expect(() => bareDate(2004, 2, 29)).not.toThrow(TypeError);
+    expect(() => bareDate(2004, 2, 30)).toThrow(TypeError);
   });
 
   test('some valid dates', () => {

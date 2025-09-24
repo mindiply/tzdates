@@ -27,7 +27,7 @@ export function getTimezoneData(ianaTimezone: TimeZone): TimeZoneData {
  */
 export function timezoneOffsetSeconds(ianaTimezone: TimeZone, millisFromEpoch: number): number {
   const timezoneData = getTimezoneData(ianaTimezone);
-  if (typeof millisFromEpoch !== 'number' || millisFromEpoch === NaN) {
+  if (typeof millisFromEpoch !== 'number' || Number.isNaN(millisFromEpoch)) {
     throw new TypeError('Expecting a valid number of milliseconds from epoch');
   }
   const index = bsUntilIndex(timezoneData.untils, millisFromEpoch);

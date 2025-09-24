@@ -7,7 +7,7 @@ import {
 describe('timezoneOffset', () => {
   test('Throw on unknown Timezones', () => {
     // @ts-expect-error providing erroneous timezone on purpose
-    expect(() => timezoneOffsetSeconds('Unkown/Timezone', 0)).toThrowError(
+    expect(() => timezoneOffsetSeconds('Unkown/Timezone', 0)).toThrow(
       UnknownTimezoneError
     );
   });
