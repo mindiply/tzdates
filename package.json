@@ -1,11 +1,11 @@
 {
   "name": "tzdates",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Bare-bone timezone aware date time functions",
   "exports": {
+    "types": "./dist/types/index.d.ts",
     "import": "./dist/esm/index.js",
-    "require": "./dist/cjs/index.js",
-    "types": "./dist/types/index.d.ts"
+    "require": "./dist/cjs/index.js"
   },
   "repository": {
     "type": "git",
