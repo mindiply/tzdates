@@ -388,6 +388,19 @@ export function bareDateTimeFromUtcMs(
   return out;
 }
 
+export function now() {
+  const _now = new Date();
+  return bareDateTime(
+    _now.getFullYear(),
+    _now.getMonth() + 1,
+    _now.getDate(),
+    _now.getHours(),
+    _now.getMinutes(),
+    _now.getSeconds(),
+    _now.getMilliseconds()
+  );
+}
+
 export function validateBareDateTime(dateTime: BareDateTime) {
   validateBareDate(dateTime);
   validateBareTime(dateTime);

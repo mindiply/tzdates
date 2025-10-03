@@ -344,9 +344,13 @@ const sun1970Jan04EpochDay = toEpochDay({year: 1970, month: 1, day: 4});
 export function isoDayOfWeek(bareDate: BareDate) {
   let rest = intMod(toEpochDay(bareDate) - sun1970Jan04EpochDay, 7);
   if (rest < 0) {
-    rest = 7 - rest;
+    rest = 7 + rest;
   }
-  return rest === 0 ? 7 : rest;
+  let dow = rest === 0 ? 7 : rest;
+  if (dow < 1 || dow > 7) {
+    throw new Error(`Unexpected day of week: ${dow}`);
+  }
+  return dow;
 }
 
 function cumulativeCycleYearsDays(): number[] {
@@ -391,8 +395,8 @@ export function toEpochDay(bareDate: BareDate): number {
     bareDate.year < -1
       ? bareDate.year + 1
       : bareDate.year > 0
-      ? bareDate.year
-      : null;
+        ? bareDate.year
+        : null;
   let totalDays = 0;
   if (lastFullYear !== null) {
     const nCycles = intDiv(lastFullYear, 400);
@@ -596,4 +600,9 @@ export function _assignBareDate(
     copyInto.day = changes.day;
   }
   return copyInto;
+}
+
+export function today(): BareDate {
+  const now = new Date();
+  return bareDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
 }

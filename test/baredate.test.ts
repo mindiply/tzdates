@@ -9,7 +9,9 @@ import {
   bareDateOfEpochDay,
   bareDateSubtract,
   bareDatesDistance,
-  bareDateToString
+  bareDateToString,
+  isoDayOfWeek,
+  today
 } from '../src';
 
 describe('isLeapYear', () => {
@@ -217,9 +219,9 @@ describe('toEpochDate and back', () => {
   expect(toEpochDay(bareDate(-1, 12, 31))).toBe(
     0 - (146097 * 5 - (30 * 365 + 7)) - 1
   );
-  expect(bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)) - 1)).toMatchObject(
-    bareDate(-1, 12, 31)
-  );
+  expect(
+    bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)) - 1)
+  ).toMatchObject(bareDate(-1, 12, 31));
   expect(toEpochDay(bareDate(-1, 12, 30))).toBe(
     0 - (146097 * 5 - (30 * 365 + 7)) - 2
   );
@@ -463,7 +465,7 @@ describe('bareDatesDistance', () => {
     expect(
       bareDatesDistance(bareDate(2021, 9, 26), bareDate(2020, 10, 5), {
         largestUnit: 'year',
-        smallestUnit: 'year',
+        smallestUnit: 'year'
       })
     ).toMatchObject(bareDuration(0));
     expect(
@@ -473,7 +475,7 @@ describe('bareDatesDistance', () => {
         roundingMode: 'halfExpand'
       })
     ).toMatchObject(bareDuration(-1, 1));
-  })
+  });
 });
 
 describe('bareDateToString', () => {
@@ -483,5 +485,38 @@ describe('bareDateToString', () => {
     expect(bareDateToString(bareDate(2100, 12, 31))).toBe('2100-12-31');
     expect(bareDateToString(bareDate(21001, 10, 21))).toBe('21001-10-21');
     expect(bareDateToString(bareDate(-102, 1, 1))).toBe('-0102-01-01');
+  });
+});
+
+describe('isoDayOfWeek', () => {
+  test('Monday on 1st Jan 1970', () => {
+    expect(isoDayOfWeek(bareDate(1969, 12, 31))).toBe(3);
+    expect(isoDayOfWeek(bareDate())).toBe(4);
+    expect(isoDayOfWeek(bareDate(1970, 1, 2))).toBe(5);
+  });
+
+  test('Week of 6th October 2025', () => {
+    expect(isoDayOfWeek(bareDate(2025, 10, 6))).toBe(1);
+    expect(isoDayOfWeek(bareDate(2025, 10, 7))).toBe(2);
+    expect(isoDayOfWeek(bareDate(2025, 10, 8))).toBe(3);
+    expect(isoDayOfWeek(bareDate(2025, 10, 9))).toBe(4);
+    expect(isoDayOfWeek(bareDate(2025, 10, 10))).toBe(5);
+    expect(isoDayOfWeek(bareDate(2025, 10, 11))).toBe(6);
+    expect(isoDayOfWeek(bareDate(2025, 10, 12))).toBe(7);
+  });
+});
+
+describe('today', () => {
+  test('Today is around now', () => {
+    const startTodayDate = today();
+    const now = new Date();
+    const todayDate = today();
+    if (startTodayDate.year !== todayDate.year || startTodayDate.month !== todayDate.month || startTodayDate.day !== todayDate.day) {
+      // The day rolled over while we were executing the test. Just skip the rest of the test.
+      return;
+    }
+    expect(todayDate.year).toBe(now.getFullYear());
+    expect(todayDate.month).toBe(now.getMonth() + 1);
+    expect(todayDate.day).toBe(now.getDate());
   });
 });

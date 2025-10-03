@@ -4,10 +4,11 @@ import {
   TimeZone,
   timezoneOffsetSeconds,
   withZonedDateTime,
-  fromBareDateTime
+  fromBareDateTime,
+  type ZonedDateTime
 } from '../src/index';
 import {intMod} from '../src/mathutils';
-import {ZonedDateTime} from '../dist';
+
 
 const iterationInterest = 1.01;
 

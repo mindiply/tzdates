@@ -8,7 +8,7 @@ export {
   BareDateDuration,
   BareTimeDuration,
   DurationSign,
-  BareDateTime,
+  BareDateTime
 } from './types';
 export * from './consts';
 export {TimeZone} from './timezones';
@@ -48,7 +48,8 @@ export {
   bareDatesDistance,
   bareDateToString,
   cmpBareDatesToMonth,
-  cmpBareDatesToYear
+  cmpBareDatesToYear,
+  today
 } from './baredate';
 export {
   bareDateTime,
@@ -57,7 +58,8 @@ export {
   bareDateTimeWith,
   cmpBareDateTimes,
   bareDateTimeSubtract,
-  bareDateTimeAdd
+  bareDateTimeAdd,
+  now
 } from './baredatetime';
 export {
   zonedDateTimeOf,

@@ -2,7 +2,8 @@ import {
   bareDuration,
   bareDateTime,
   bareDateTimeAdd,
-  bareDateTimeSubtract
+  bareDateTimeSubtract,
+  now
 } from '../src/index';
 
 describe('bareDateTimeAdd', () => {
@@ -182,3 +183,25 @@ describe('bareDateTimeSubtract', () => {
     ).toMatchObject(bareDateTime(2023, 6, 2, 0, 20, 30, 999));
   });
 });
+
+describe('now', () => {
+  test('Current date time', () => {
+
+    const bdt = now();
+    const ref = new Date();
+    const dt = now();
+    const bd = new Date(bdt.year, bdt.month - 1, bdt.day, bdt.hour, bdt.minute, bdt.second, bdt.millisecond);
+    const ad = new Date(dt.year, dt.month - 1, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
+    if (ad.getTime() - bd.getTime() < 100 && (bdt.hour !== dt.hour || bdt.minute !== dt.minute || bdt.second !== dt.second)) {
+      // All good, within 100ms and at least one of hour, minute, second is different
+      return;
+    }
+    expect(ad.getTime() - bd.getTime()).toBeLessThan(100);
+    expect(ref.getHours()).toBe(dt.hour);
+    expect(ref.getMinutes()).toBe(dt.minute);
+    expect(ref.getSeconds()).toBe(dt.second);
+    expect(ref.getFullYear()).toBe(dt.year);
+    expect(ref.getMonth() + 1).toBe(dt.month);
+    expect(ref.getDate()).toBe(dt.day);
+  });
+})
