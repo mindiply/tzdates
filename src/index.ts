@@ -30,7 +30,8 @@ export {
   bareTimesDistance,
   cmpBareTimesToSecs,
   cmpBareTimesToHours,
-  cmpBareTimesToMinutes
+  cmpBareTimesToMinutes,
+  isValidBareTime
 } from './baretime';
 export {
   bareDate,
@@ -49,7 +50,8 @@ export {
   bareDateToString,
   cmpBareDatesToMonth,
   cmpBareDatesToYear,
-  today
+  today,
+  isValidBareDate
 } from './baredate';
 export {
   bareDateTime,
@@ -59,7 +61,8 @@ export {
   cmpBareDateTimes,
   bareDateTimeSubtract,
   bareDateTimeAdd,
-  now
+  now,
+  isValidBareDateTime
 } from './baredatetime';
 export {
   zonedDateTimeOf,

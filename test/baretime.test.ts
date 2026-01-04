@@ -5,7 +5,8 @@ import {
   bareTimeToString,
   bareTimeWith,
   bareTimesDistance,
-  bareDuration
+  bareDuration,
+  isValidBareTime
 } from '../src';
 
 describe('baretime', () => {
@@ -358,4 +359,32 @@ describe('bareTimesDistance', () => {
       bareDuration(-1, 0, 0, 0, 1, 40, 30, 878)
     );
   });
+});
+
+describe('isValidBareTime', () => {
+  const cases: Array<[unknown, boolean]> = [
+    [bareTime(), true],
+    [bareTime(12, 30, 15, 250), true],
+    [{hour: 10, minute: 20, second: 30, millisecond: 500}, true],
+    [{hour: -1, minute: 0, second: 0, millisecond: 0}, false],
+    [{hour: 24, minute: 0, second: 0, millisecond: 0}, false],
+    [{hour: 0, minute: -1, second: 0, millisecond: 0}, false],
+    [{hour: 0, minute: 60, second: 0, millisecond: 0}, false],
+    [{hour: 0, minute: 0, second: -1, millisecond: 0}, false],
+    [{hour: 0, minute: 0, second: 60, millisecond: 0}, false],
+    [{hour: 0, minute: 0, second: 0, millisecond: -1}, false],
+    [{hour: 0, minute: 0, second: 0, millisecond: 1000}, false],
+    [null, false],
+    [undefined, false],
+    [{}, false],
+    [{hour: 10, minute: 20}, false],
+    [{hour: '10', minute: 20, second: 30, millisecond: 500}, false],
+  ];
+
+  test.each(cases)(
+    'isValidBareTime(%o) should be %s',
+    (input: unknown, expected: boolean) => {
+      expect(isValidBareTime(input)).toBe(expected);
+    }
+  );
 });

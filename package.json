@@ -1,6 +1,6 @@
 {
   "name": "tzdates",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Bare-bone timezone aware date time functions",
   "exports": {
     "types": "./dist/types/index.d.ts",
@@ -37,13 +37,13 @@
   "author": "Paolo F. Bongiovanni <paolo.bongiovanni@mindiply.com>",
   "license": "MIT",
   "devDependencies": {
-    "@tsconfig/node-lts": "^22.0.2",
+    "@tsconfig/node-lts": "^24.0.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.5.2",
-    "jest": "^30.1.3",
-    "prettier": "^3.6.2",
-    "ts-jest": "^29.4.4",
+    "@types/node": "^25.0.3",
+    "jest": "^30.2.0",
+    "prettier": "^3.7.4",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

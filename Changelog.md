@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+# [0.0.9] - 2026-01-04
+
+## Added
+- Added isValidBareDate, isValidBareTime, isValidBareDateTime functions to validate BareDate, BareTime and BareDateTime objects
+
 # [0.0.8] - 2025-10-03
 
 ## Added

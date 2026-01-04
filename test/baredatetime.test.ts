@@ -3,8 +3,9 @@ import {
   bareDateTime,
   bareDateTimeAdd,
   bareDateTimeSubtract,
-  now
-} from '../src/index';
+  now,
+  isValidBareDateTime
+} from '../src';
 
 describe('bareDateTimeAdd', () => {
   test('Zero additions', () => {
@@ -186,13 +187,33 @@ describe('bareDateTimeSubtract', () => {
 
 describe('now', () => {
   test('Current date time', () => {
-
     const bdt = now();
     const ref = new Date();
     const dt = now();
-    const bd = new Date(bdt.year, bdt.month - 1, bdt.day, bdt.hour, bdt.minute, bdt.second, bdt.millisecond);
-    const ad = new Date(dt.year, dt.month - 1, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond);
-    if (ad.getTime() - bd.getTime() < 100 && (bdt.hour !== dt.hour || bdt.minute !== dt.minute || bdt.second !== dt.second)) {
+    const bd = new Date(
+      bdt.year,
+      bdt.month - 1,
+      bdt.day,
+      bdt.hour,
+      bdt.minute,
+      bdt.second,
+      bdt.millisecond
+    );
+    const ad = new Date(
+      dt.year,
+      dt.month - 1,
+      dt.day,
+      dt.hour,
+      dt.minute,
+      dt.second,
+      dt.millisecond
+    );
+    if (
+      ad.getTime() - bd.getTime() < 100 &&
+      (bdt.hour !== dt.hour ||
+        bdt.minute !== dt.minute ||
+        bdt.second !== dt.second)
+    ) {
       // All good, within 100ms and at least one of hour, minute, second is different
       return;
     }
@@ -204,4 +225,191 @@ describe('now', () => {
     expect(ref.getMonth() + 1).toBe(dt.month);
     expect(ref.getDate()).toBe(dt.day);
   });
-})
+});
+
+describe('isValidBareDateTime', () => {
+  const cases = [
+    {bdt: bareDateTime(2022, 5, 23), valid: true},
+    {bdt: bareDateTime(2020, 2, 29), valid: true},
+    {bdt: bareDateTime(2022, 5, 23, 0, 0, 0, 0), valid: true},
+    {bdt: bareDateTime(2022, 5, 23, 12, 30, 15, 500), valid: true},
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 23,
+        hour: 12,
+        minute: 30,
+        second: 15,
+        millisecond: 999
+      },
+      valid: true
+    },
+    {
+      bdt: {year: 2022, month: 5, day: 23, hour: 12, minute: 30, second: 15},
+      valid: false
+    },
+    {bdt: {year: 2022, month: 5, day: 23, hour: 12, minute: 30}, valid: false},
+    {bdt: {year: 2022, month: 5, day: 23, hour: 12}, valid: false},
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 23,
+        hour: 12,
+        minute: 30,
+        second: 15,
+        millisecond: -100
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 23,
+        hour: 12,
+        minute: 30,
+        second: 15,
+        millisecond: 1000
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 23,
+        hour: -1,
+        minute: 30,
+        second: 15,
+        millisecond: 500
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 23,
+        hour: 24,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 23,
+        hour: 23,
+        minute: 60,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 2,
+        day: 29,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 13,
+        day: 1,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 0,
+        day: 29,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 5,
+        day: 32,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 2,
+        day: 0,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 2,
+        day: 28,
+        hour: 24,
+        minute: 0,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 2,
+        day: 28,
+        hour: 0,
+        minute: 60,
+        second: 0,
+        millisecond: 0
+      },
+      valid: false
+    },
+    {
+      bdt: {
+        year: 2022,
+        month: 2,
+        day: 28,
+        hour: 0,
+        minute: 0,
+        second: 60,
+        millisecond: 0
+      },
+      valid: false
+    }
+  ];
+
+  it.each(cases)('Should validate bareDateTime %#', ({bdt, valid}) => {
+    expect(isValidBareDateTime(bdt)).toBe(valid);
+  });
+});

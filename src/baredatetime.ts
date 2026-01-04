@@ -14,6 +14,7 @@ import {
   _millisFromMidnight,
   bareTimeOfMsFromMidnight,
   cmpBareTimes,
+  isValidBareTime,
   validateBareTime
 } from './baretime';
 import {
@@ -23,6 +24,7 @@ import {
   bareDateSubtract,
   cmpBareDates,
   isoDaysInMonth,
+  isValidBareDate,
   toEpochDay,
   validateBareDate
 } from './baredate';
@@ -399,6 +401,10 @@ export function now() {
     _now.getSeconds(),
     _now.getMilliseconds()
   );
+}
+
+export function isValidBareDateTime(o: unknown): o is BareDateTime {
+  return isValidBareTime(o) && isValidBareDate(o);
 }
 
 export function validateBareDateTime(dateTime: BareDateTime) {
