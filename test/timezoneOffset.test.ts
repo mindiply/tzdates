@@ -1,8 +1,9 @@
+import {describe, expect, test} from 'vitest';
 import {
   TimeZone,
   timezoneOffsetSeconds,
   UnknownTimezoneError
-} from '../src/index';
+} from '../src/index.js';
 
 describe('timezoneOffset', () => {
   test('Throw on unknown Timezones', () => {

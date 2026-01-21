@@ -1,7 +1,7 @@
-import {tzdbPackedData} from './zonesData'
-import {unpackZonesData} from './tzDataSerialization'
-import {TimeZoneData, UnknownTimezoneError} from './types'
-import {TimeZone} from './timezones'
+import {tzdbPackedData} from './zonesData.js';
+import {unpackZonesData} from './tzDataSerialization.js';
+import {TimeZoneData, UnknownTimezoneError} from './types.js';
+import {TimeZone} from './timezones.js';
 
 const timezonesOffsets = unpackZonesData(tzdbPackedData);
 

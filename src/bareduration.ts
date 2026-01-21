@@ -5,8 +5,12 @@ import {
   BareTimeDuration,
   DurationSign,
   RoundingTimeUnit
-} from './types';
-import {MILLIS_PER_HOUR, MILLIS_PER_MINUTE, MILLIS_PER_SECOND} from './consts';
+} from './types.js';
+import {
+  MILLIS_PER_HOUR,
+  MILLIS_PER_MINUTE,
+  MILLIS_PER_SECOND
+} from './consts.js';
 
 export function weeksBareDuration(
   sign: DurationSign,

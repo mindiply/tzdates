@@ -1,6 +1,6 @@
-import {BareDate, BareDuration, DistanceFnOptions} from './types';
-import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts';
-import {intDiv, intMod, roundDown} from './mathutils';
+import {BareDate, BareDuration, DistanceFnOptions} from './types.js';
+import {DAYS_0000_TO_1970, DAYS_PER_CYCLE} from './consts.js';
+import {intDiv, intMod, roundDown} from './mathutils.js';
 import {
   bareDuration,
   dayPriority,
@@ -9,7 +9,7 @@ import {
   roundingUnitPriority,
   validateBareDateDuration,
   yearPriority
-} from './bareduration';
+} from './bareduration.js';
 
 let _cumulativeCycleYearsDays: number[] | null = null;
 let _cumulativeNegativeCycleYearsDays: number[] | null = null;

@@ -1,5 +1,9 @@
-import {IncorrectTimezoneData, TimeZoneData, UnpackedZoneBundle} from './types'
-import {roundDown} from './mathutils'
+import {
+  IncorrectTimezoneData,
+  TimeZoneData,
+  UnpackedZoneBundle
+} from './types.js';
+import {roundDown} from './mathutils.js';
 
 const BASE60 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX';
 const EPSILON = 0.000001; // Used to fix floating point rounding errors

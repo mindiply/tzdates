@@ -1,18 +1,17 @@
-import {BareDuration, BareTime, BareTimeDuration} from './types';
-import {intDiv, intMod} from './mathutils';
+import {BareDuration, BareTime, BareTimeDuration} from './types.js';
+import {intDiv, intMod} from './mathutils.js';
 import {
   bareDuration,
   negateBareDuration,
   timeDurationMillis,
-  validateBareDuration,
   validateBareTimeDuration
-} from './bareduration';
+} from './bareduration.js';
 import {
   MILLIS_PER_DAY,
   MILLIS_PER_HOUR,
   MILLIS_PER_MINUTE,
   MILLIS_PER_SECOND
-} from './consts';
+} from './consts.js';
 
 export function bareTime(
   hour = 0,

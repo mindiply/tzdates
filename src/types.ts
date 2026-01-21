@@ -1,4 +1,4 @@
-import {TimeZone} from './timezones';
+import {TimeZone} from './timezones.js';
 
 export interface TimeZoneData {
   /** The uniquely identifying name of the time zone. */

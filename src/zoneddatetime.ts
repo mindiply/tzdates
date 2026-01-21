@@ -5,10 +5,10 @@ import {
   RoundingMode,
   RoundingTimeUnit,
   ZonedDateTime
-} from './types';
-import {TimeZone} from './timezones';
-import {isValidTimezone, timezoneOffsetSeconds} from './tzOffset';
-import {intDiv, intMod} from './mathutils';
+} from './types.js';
+import {TimeZone} from './timezones.js';
+import {isValidTimezone, timezoneOffsetSeconds} from './tzOffset.js';
+import {intDiv, intMod} from './mathutils.js';
 import {
   MAX_UTC_NEG_OFFSET_SECONDS,
   MAX_UTC_POS_OFFSET_SECONDS,
@@ -17,7 +17,7 @@ import {
   MILLIS_PER_MINUTE,
   MILLIS_PER_SECOND,
   SECS_PER_DAY
-} from './consts';
+} from './consts.js';
 import {
   _assignBareDateTime,
   bareDateNonOffsetUtcMs,
@@ -28,25 +28,24 @@ import {
   nextValidDateTime,
   offsetSecondsOf,
   validateBareDateTime
-} from './baredatetime';
+} from './baredatetime.js';
 import {
   _assignBareTime,
   _millisFromMidnight,
   bareTimeOfMsFromMidnight,
   bareTimesDistance,
   cmpBareTimes
-} from './baretime';
+} from './baretime.js';
 import {
   _assignBareDate,
   bareDateAdd,
   bareDateOfEpochDay,
   bareDateSubtract,
-  bareDateWith,
   cmpBareDates,
   cmpMonthDay,
   isoDaysInMonth,
   toEpochDay
-} from './baredate';
+} from './baredate.js';
 import {
   bareDuration,
   dayPriority,
@@ -62,38 +61,7 @@ import {
   timeDurationMillis,
   validateBareDuration,
   yearPriority
-} from './bareduration';
-
-function emptyBareZonedDateTime(): ZonedDateTime {
-  return {
-    utcOffsetSeconds: 1970,
-    timezone: TimeZone.UTC,
-    epochMilli: 0,
-    year: 0,
-    month: 1,
-    day: 1,
-    hour: 0,
-    minute: 0,
-    second: 0,
-    millisecond: 0
-  };
-}
-
-export function cloneZonedDateTime(zdt: ZonedDateTime): ZonedDateTime {
-  validateZonedDateTime(zdt);
-  return {
-    year: zdt.year,
-    month: zdt.month,
-    day: zdt.day,
-    hour: zdt.hour,
-    minute: zdt.minute,
-    second: zdt.second,
-    millisecond: zdt.millisecond,
-    utcOffsetSeconds: zdt.utcOffsetSeconds,
-    timezone: zdt.timezone,
-    epochMilli: zdt.epochMilli
-  };
-}
+} from './bareduration.js';
 
 export function zonedDateTimeOf(
   dateOrEpochMs: Date | number,

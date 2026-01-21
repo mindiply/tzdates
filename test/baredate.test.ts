@@ -1,3 +1,4 @@
+import {describe, expect, test} from 'vitest';
 import {
   bareDate,
   bareDateAdd,
@@ -12,7 +13,7 @@ import {
   bareDateToString,
   isoDayOfWeek,
   today
-} from '../src';
+} from '../src/index.js';
 
 describe('isLeapYear', () => {
   test('Valid leap years', () => {
@@ -212,94 +213,98 @@ describe('bareDateWith', () => {
 });
 
 describe('toEpochDate and back', () => {
-  expect(toEpochDay(bareDate(0, 1, 1))).toBe(0 - (146097 * 5 - (30 * 365 + 7)));
-  expect(toEpochDay(bareDate(0, 1, 2))).toBe(
-    0 - (146097 * 5 - (30 * 365 + 7)) + 1
-  );
-  expect(toEpochDay(bareDate(-1, 12, 31))).toBe(
-    0 - (146097 * 5 - (30 * 365 + 7)) - 1
-  );
-  expect(
-    bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)) - 1)
-  ).toMatchObject(bareDate(-1, 12, 31));
-  expect(toEpochDay(bareDate(-1, 12, 30))).toBe(
-    0 - (146097 * 5 - (30 * 365 + 7)) - 2
-  );
-  expect(toEpochDay(bareDate(-1, 1, 1))).toBe(
-    0 - (146097 * 5 - (30 * 365 + 7)) - 365
-  );
-  expect(bareDateOfEpochDay(toEpochDay(bareDate(-1, 1, 1)))).toMatchObject(
-    bareDate(-1, 1, 1)
-  );
-  expect(bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
-    bareDate(0, 1, 1)
-  );
-  expect(toEpochDay(bareDate(-1, 1, 1))).toBe(
-    0 - 365 - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(
-    bareDateOfEpochDay(0 - 365 - (146097 * 5 - (30 * 365 + 7)))
-  ).toMatchObject(bareDate(-1, 1, 1));
-  expect(toEpochDay(bareDate(-2, 1, 1))).toBe(
-    0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(
-    bareDateOfEpochDay(0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7)))
-  ).toMatchObject(bareDate(-2, 1, 1));
-  expect(toEpochDay(bareDate(-3, 1, 1))).toBe(
-    0 - 3 * 365 - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(toEpochDay(bareDate(-4, 1, 1))).toBe(
-    0 - (4 * 365 + 1) - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(toEpochDay(bareDate(-5, 1, 1))).toBe(
-    0 - (5 * 365 + 1) - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(toEpochDay(bareDate(-400, 1, 1))).toBe(
-    0 - 146097 - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(
-    bareDateOfEpochDay(0 - 146097 - (146097 * 5 - (30 * 365 + 7)))
-  ).toMatchObject(bareDate(-400, 1, 1));
-  expect(toEpochDay(bareDate(-405, 1, 1))).toBe(
-    0 - (5 * 365 + 1) - 146097 - (146097 * 5 - (30 * 365 + 7))
-  );
-  expect(
-    bareDateOfEpochDay(
+  test('Epoch day conversions', () => {
+    expect(toEpochDay(bareDate(0, 1, 1))).toBe(
+      0 - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(toEpochDay(bareDate(0, 1, 2))).toBe(
+      0 - (146097 * 5 - (30 * 365 + 7)) + 1
+    );
+    expect(toEpochDay(bareDate(-1, 12, 31))).toBe(
+      0 - (146097 * 5 - (30 * 365 + 7)) - 1
+    );
+    expect(
+      bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)) - 1)
+    ).toMatchObject(bareDate(-1, 12, 31));
+    expect(toEpochDay(bareDate(-1, 12, 30))).toBe(
+      0 - (146097 * 5 - (30 * 365 + 7)) - 2
+    );
+    expect(toEpochDay(bareDate(-1, 1, 1))).toBe(
+      0 - (146097 * 5 - (30 * 365 + 7)) - 365
+    );
+    expect(bareDateOfEpochDay(toEpochDay(bareDate(-1, 1, 1)))).toMatchObject(
+      bareDate(-1, 1, 1)
+    );
+    expect(bareDateOfEpochDay(0 - (146097 * 5 - (30 * 365 + 7)))).toMatchObject(
+      bareDate(0, 1, 1)
+    );
+    expect(toEpochDay(bareDate(-1, 1, 1))).toBe(
+      0 - 365 - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(
+      bareDateOfEpochDay(0 - 365 - (146097 * 5 - (30 * 365 + 7)))
+    ).toMatchObject(bareDate(-1, 1, 1));
+    expect(toEpochDay(bareDate(-2, 1, 1))).toBe(
+      0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(
+      bareDateOfEpochDay(0 - 2 * 365 - (146097 * 5 - (30 * 365 + 7)))
+    ).toMatchObject(bareDate(-2, 1, 1));
+    expect(toEpochDay(bareDate(-3, 1, 1))).toBe(
+      0 - 3 * 365 - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(toEpochDay(bareDate(-4, 1, 1))).toBe(
+      0 - (4 * 365 + 1) - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(toEpochDay(bareDate(-5, 1, 1))).toBe(
+      0 - (5 * 365 + 1) - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(toEpochDay(bareDate(-400, 1, 1))).toBe(
+      0 - 146097 - (146097 * 5 - (30 * 365 + 7))
+    );
+    expect(
+      bareDateOfEpochDay(0 - 146097 - (146097 * 5 - (30 * 365 + 7)))
+    ).toMatchObject(bareDate(-400, 1, 1));
+    expect(toEpochDay(bareDate(-405, 1, 1))).toBe(
       0 - (5 * 365 + 1) - 146097 - (146097 * 5 - (30 * 365 + 7))
-    )
-  ).toMatchObject(bareDate(-405, 1, 1));
-  expect(toEpochDay(bareDate(1970, 1, 1))).toBe(0);
-  expect(bareDateOfEpochDay(0)).toMatchObject(bareDate(1970, 1, 1));
-  expect(bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)))).toMatchObject(
-    bareDate(2022, 1, 1)
-  );
-  expect(
-    bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)) + 1)
-  ).toMatchObject(bareDate(2022, 1, 2));
-  expect(
-    bareDateOfEpochDay(toEpochDay(bareDate(2020, 1, 1)) + 1)
-  ).toMatchObject(bareDate(2020, 1, 2));
-  expect(
-    bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)) - 1)
-  ).toMatchObject(bareDate(2021, 12, 31));
-  expect(
-    bareDateOfEpochDay(toEpochDay(bareDate(2023, 1, 1)) - 1)
-  ).toMatchObject(bareDate(2022, 12, 31));
-  expect(toEpochDay(bareDate(2021, 11, 16))).not.toBe(
-    toEpochDay(bareDate(2021, 12, 16))
-  );
-  const nov16 = toEpochDay(bareDate(2021, 11, 16));
-  expect(bareDateOfEpochDay(nov16)).toMatchObject(bareDate(2021, 11, 16));
-  expect(bareDateOfEpochDay(toEpochDay(bareDate(2021, 11, 17)))).toMatchObject(
-    bareDate(2021, 11, 17)
-  );
-  expect(bareDateOfEpochDay(toEpochDay(bareDate(2021, 11, 18)))).toMatchObject(
-    bareDate(2021, 11, 18)
-  );
-  expect(
-    bareDateOfEpochDay(toEpochDay(bareDate(2021, 11, 16)) + 1)
-  ).toMatchObject(bareDate(2021, 11, 17));
+    );
+    expect(
+      bareDateOfEpochDay(
+        0 - (5 * 365 + 1) - 146097 - (146097 * 5 - (30 * 365 + 7))
+      )
+    ).toMatchObject(bareDate(-405, 1, 1));
+    expect(toEpochDay(bareDate(1970, 1, 1))).toBe(0);
+    expect(bareDateOfEpochDay(0)).toMatchObject(bareDate(1970, 1, 1));
+    expect(bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)))).toMatchObject(
+      bareDate(2022, 1, 1)
+    );
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)) + 1)
+    ).toMatchObject(bareDate(2022, 1, 2));
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2020, 1, 1)) + 1)
+    ).toMatchObject(bareDate(2020, 1, 2));
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2022, 1, 1)) - 1)
+    ).toMatchObject(bareDate(2021, 12, 31));
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2023, 1, 1)) - 1)
+    ).toMatchObject(bareDate(2022, 12, 31));
+    expect(toEpochDay(bareDate(2021, 11, 16))).not.toBe(
+      toEpochDay(bareDate(2021, 12, 16))
+    );
+    const nov16 = toEpochDay(bareDate(2021, 11, 16));
+    expect(bareDateOfEpochDay(nov16)).toMatchObject(bareDate(2021, 11, 16));
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2021, 11, 17)))
+    ).toMatchObject(bareDate(2021, 11, 17));
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2021, 11, 18)))
+    ).toMatchObject(bareDate(2021, 11, 18));
+    expect(
+      bareDateOfEpochDay(toEpochDay(bareDate(2021, 11, 16)) + 1)
+    ).toMatchObject(bareDate(2021, 11, 17));
+  });
 });
 
 describe('barTimeAdd', () => {
@@ -511,7 +516,11 @@ describe('today', () => {
     const startTodayDate = today();
     const now = new Date();
     const todayDate = today();
-    if (startTodayDate.year !== todayDate.year || startTodayDate.month !== todayDate.month || startTodayDate.day !== todayDate.day) {
+    if (
+      startTodayDate.year !== todayDate.year ||
+      startTodayDate.month !== todayDate.month ||
+      startTodayDate.day !== todayDate.day
+    ) {
       // The day rolled over while we were executing the test. Just skip the rest of the test.
       return;
     }

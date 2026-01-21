@@ -1,3 +1,4 @@
+import {describe, expect, test} from 'vitest';
 import {
   bareTime,
   bareTimeAdd,
@@ -6,7 +7,7 @@ import {
   bareTimeWith,
   bareTimesDistance,
   bareDuration
-} from '../src';
+} from '../src/index.js';
 
 describe('baretime', () => {
   describe('Add', () => {

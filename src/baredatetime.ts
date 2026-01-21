@@ -1,21 +1,21 @@
-import {TimeZone} from './timezones';
-import {BareDateTime, BareDuration, ZonedDateTime} from './types';
-import {getTimezoneData, timezoneOffsetSeconds} from './tzOffset';
-import {intDiv, intMod} from './mathutils';
+import {TimeZone} from './timezones.js';
+import {BareDateTime, BareDuration, ZonedDateTime} from './types.js';
+import {getTimezoneData, timezoneOffsetSeconds} from './tzOffset.js';
+import {intDiv, intMod} from './mathutils.js';
 import {
   MILLIS_PER_DAY,
   MILLIS_PER_HOUR,
   MILLIS_PER_MINUTE,
   MILLIS_PER_SECOND,
   SECS_PER_DAY
-} from './consts';
+} from './consts.js';
 import {
   _assignBareTime,
   _millisFromMidnight,
   bareTimeOfMsFromMidnight,
   cmpBareTimes,
   validateBareTime
-} from './baretime';
+} from './baretime.js';
 import {
   _assignBareDate,
   bareDateAdd,
@@ -25,13 +25,13 @@ import {
   isoDaysInMonth,
   toEpochDay,
   validateBareDate
-} from './baredate';
+} from './baredate.js';
 import {
   includesDateDuration,
   includesTimeDuration,
   negateBareDuration,
   validateBareDuration
-} from './bareduration';
+} from './bareduration.js';
 
 export function emptyBareDateTime(): BareDateTime {
   return {

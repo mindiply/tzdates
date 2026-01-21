@@ -1,10 +1,8 @@
+import {describe, expect, test} from 'vitest';
 import {
   bareDuration,
-  weeksBareDuration,
-  absBareDuration,
-  negateBareDuration,
-  cmpBareDurations
-} from '../src';
+  weeksBareDuration
+} from '../src/index.js';
 
 describe('duration', () => {
   test('Invalid durations', () => {

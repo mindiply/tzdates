@@ -1,3 +1,4 @@
+import {describe, expect, test} from 'vitest';
 import {
   bareDateTime,
   bareDuration,
@@ -10,7 +11,7 @@ import {
   zonedDateTimesDistance,
   zonedDateTimeSubtract,
   MILLIS_PER_DAY
-} from '../src';
+} from '../src/index.js';
 
 describe('constructors', () => {
   describe('fromBareDateTime', () => {
