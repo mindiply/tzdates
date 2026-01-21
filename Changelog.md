@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+# [0.0.11] - 2026-01-21
+
+## Fixes
+- Package is now of type "module" in package.json to avoid issues when used in node projects using ESM imports.
+
 # [0.0.10] - 2026-01-21
 
 ## Changes

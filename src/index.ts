@@ -9,17 +9,17 @@ export {
   BareTimeDuration,
   DurationSign,
   BareDateTime
-} from './types';
-export * from './consts';
-export {TimeZone} from './timezones';
-export {timezoneOffsetSeconds} from './tzOffset';
+} from './types.js';
+export * from './consts.js';
+export {TimeZone} from './timezones.js';
+export {timezoneOffsetSeconds} from './tzOffset.js';
 export {
   bareDuration,
   weeksBareDuration,
   negateBareDuration,
   absBareDuration,
   cmpBareDurations
-} from './bareduration';
+} from './bareduration.js';
 export {
   bareTime,
   bareTimeWith,
@@ -74,4 +74,4 @@ export {
   withZonedDateTime,
   zonedDateTimeToTimezone,
   zoneDateTimesUnitsBetween
-} from './zoneddatetime';
+} from './zoneddatetime.js';
