@@ -12,7 +12,8 @@ import {
   bareDatesDistance,
   bareDateToString,
   isoDayOfWeek,
-  today
+  today,
+  isValidBareDate
 } from '../src/index.js';
 
 describe('isLeapYear', () => {
@@ -528,4 +529,30 @@ describe('today', () => {
     expect(todayDate.month).toBe(now.getMonth() + 1);
     expect(todayDate.day).toBe(now.getDate());
   });
+});
+
+describe('isValidBareDate', () => {
+  const cases: Array<{date: any; valid: boolean}> = [
+    {date: {year: 2022, month: 5, day: 15}, valid: true},
+    {date: {year: 0, month: 1, day: 1}, valid: true},
+    {date: {year: -100, month: 12, day: 31}, valid: true},
+    {date: {year: 2021, month: 2, day: 29}, valid: false},
+    {date: {year: 2020, month: 2, day: 30}, valid: false},
+    {date: {year: 2022, month: 13, day: 1}, valid: false},
+    {date: {year: 2022, month: 0, day: 10}, valid: false},
+    {date: {year: 2022, month: 4, day: 31}, valid: false},
+    {date: {year: '2022', month: 5, day: 15}, valid: false},
+    {date: {year: 2022, month: '5', day: 15}, valid: false},
+    {date: {year: 2022, month: 5, day: '15'}, valid: false},
+    {date: {year: 2022.5, month: 5, day: 15}, valid: false},
+    {date: {year: 2022, month: 5.5, day: 15}, valid: false},
+    {date: {year: 2022, month: 5, day: 15.5}, valid: false},
+    {date: null, valid: false},
+    {date: undefined, valid: false},
+    {date: {}, valid: false},
+  ];
+
+  it.each(cases)('validates bareDate %#', ({date, valid}) => {
+    expect(isValidBareDate(date)).toBe(valid);
+  })
 });

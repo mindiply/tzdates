@@ -1,4 +1,3 @@
-import {describe, expect, test} from 'vitest';
 import {
   bareTime,
   bareTimeAdd,
@@ -6,7 +5,8 @@ import {
   bareTimeToString,
   bareTimeWith,
   bareTimesDistance,
-  bareDuration
+  bareDuration,
+  isValidBareTime
 } from '../src/index.js';
 
 describe('baretime', () => {

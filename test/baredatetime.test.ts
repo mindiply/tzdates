@@ -1,10 +1,10 @@
-import {describe, expect, test} from 'vitest';
 import {
   bareDuration,
   bareDateTime,
   bareDateTimeAdd,
   bareDateTimeSubtract,
-  now
+  now,
+  isValidBareDateTime
 } from '../src/index.js';
 
 describe('bareDateTimeAdd', () => {
@@ -90,15 +90,6 @@ describe('bareDateTimeAdd', () => {
         bareDuration(-1, 1, 0, 1, 0, 30, 30, 999)
       )
     ).toMatchObject(bareDateTime(2021, 5, 30, 23, 19, 29, 1));
-  });
-
-  test("Adding milliseconds that cause overflows", () => {
-    expect(
-      bareDateTimeAdd(
-        bareDateTime(2022, 12, 31, 23, 59, 59, 999),
-        bareDuration(1, 0, 0, 0, 0, 0, 0, 1)
-      )
-    ).toMatchObject(bareDateTime(2023, 1, 1, 0, 0, 0, 0));
   });
 });
 

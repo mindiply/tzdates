@@ -61,8 +61,8 @@ export function cmpBareTimes(left: BareTime, right: BareTime): number {
     (left.millisecond < right.millisecond
       ? -1
       : left.millisecond > right.millisecond
-      ? 1
-      : 0)
+        ? 1
+        : 0)
   );
 }
 
@@ -153,26 +153,37 @@ export function _millisFromMidnight(time: BareTime): number {
   );
 }
 
-export function validateBareTime({
-  hour,
-  minute,
-  second,
-  millisecond
-}: BareTime) {
+export function isValidBareTime(o: unknown): o is BareTime {
   if (
-    !Number.isInteger(hour) ||
-    !Number.isInteger(minute) ||
-    !Number.isInteger(second) ||
-    !Number.isInteger(millisecond) ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59 ||
-    second < 0 ||
-    second > 59 ||
-    millisecond < 0 ||
-    millisecond > 999
+    typeof o === 'object' &&
+    o !== null &&
+    'hour' in o &&
+    'minute' in o &&
+    'second' in o &&
+    'millisecond' in o
   ) {
+    const {hour, minute, second, millisecond} = o as BareTime;
+    return !(
+      !Number.isInteger(hour) ||
+      !Number.isInteger(minute) ||
+      !Number.isInteger(second) ||
+      !Number.isInteger(millisecond) ||
+      hour < 0 ||
+      hour > 23 ||
+      minute < 0 ||
+      minute > 59 ||
+      second < 0 ||
+      second > 59 ||
+      millisecond < 0 ||
+      millisecond > 999
+    );
+  } else {
+    return false;
+  }
+}
+
+export function validateBareTime(bt: BareTime) {
+  if (!isValidBareTime(bt)) {
     throw new RangeError('Incorrect values within BareTime');
   }
 }
@@ -246,8 +257,8 @@ export function bareTimeToString(bareTime: BareTime): string {
           bareTime.millisecond < 10
             ? '00'
             : bareTime.millisecond < 100
-            ? '0'
-            : ''
+              ? '0'
+              : ''
         }${bareTime.millisecond}`
       : '';
   return `T${bareTime.hour < 10 ? '0' : ''}${bareTime.hour}:${

@@ -1,4 +1,6 @@
-export type {
+export {
+  UnknownTimezoneError,
+  IncorrectTimezoneData,
   ZonedDateTime,
   BareDuration,
   BareTime,
@@ -7,18 +9,17 @@ export type {
   BareTimeDuration,
   DurationSign,
   BareDateTime
-} from './types.js';
-export {UnknownTimezoneError, IncorrectTimezoneData} from './types.js';
-export * from './consts.js';
-export {TimeZone} from './timezones.js';
-export {timezoneOffsetSeconds} from './tzOffset.js';
+} from './types';
+export * from './consts';
+export {TimeZone} from './timezones';
+export {timezoneOffsetSeconds} from './tzOffset';
 export {
   bareDuration,
   weeksBareDuration,
   negateBareDuration,
   absBareDuration,
   cmpBareDurations
-} from './bareduration.js';
+} from './bareduration';
 export {
   bareTime,
   bareTimeWith,
@@ -29,7 +30,8 @@ export {
   bareTimesDistance,
   cmpBareTimesToSecs,
   cmpBareTimesToHours,
-  cmpBareTimesToMinutes
+  cmpBareTimesToMinutes,
+  isValidBareTime
 } from './baretime.js';
 export {
   bareDate,
@@ -48,7 +50,8 @@ export {
   bareDateToString,
   cmpBareDatesToMonth,
   cmpBareDatesToYear,
-  today
+  today,
+  isValidBareDate
 } from './baredate.js';
 export {
   bareDateTime,
@@ -58,7 +61,8 @@ export {
   cmpBareDateTimes,
   bareDateTimeSubtract,
   bareDateTimeAdd,
-  now
+  now,
+  isValidBareDateTime
 } from './baredatetime.js';
 export {
   zonedDateTimeOf,
@@ -70,4 +74,4 @@ export {
   withZonedDateTime,
   zonedDateTimeToTimezone,
   zoneDateTimesUnitsBetween
-} from './zoneddatetime.js';
+} from './zoneddatetime';
